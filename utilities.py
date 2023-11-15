@@ -1,6 +1,3 @@
-from matplotlib import pyplot as plt
-
-
 class intervalle():
     def __init__(self, a=None, b=None):
         self.a = a
@@ -74,7 +71,10 @@ class IFT():
             c = - h*(self.d - self.c)/self.h +self.d
             return IFT(self.a,b,c,self.d, h,self.label)
 
-
+class NFT(IFT):
+    def __init__(self, a, b, c, h, label):
+        IFT.__init__(self, a, b, b, c, h, label)
+ # Rajouter les autres types differents ! réimplémenter les mutilications pour intervalles flous purs
 
 
 class Classe():
@@ -84,8 +84,8 @@ class Classe():
         self.valeurs = []
 
     def add(self, ift):
-        self.valeurs.append[ift]
-        self.classes.append[ift.label]
+        self.valeurs.append(ift)
+        self.classes.append(ift.label)
 
     def v(self, x):
         appartenance = {}
@@ -94,14 +94,27 @@ class Classe():
         return appartenance
 
 
-class NFT(IFT):
-    def __init__(self, a, b, c, h, label):
-        IFT.__init__(self, a, b, b, c, h, label)
-
 
 if __name__ == "__main__":
+    from matplotlib import pyplot as plt
+
+    age = Classe("age")
+    vieux = IFT(50,60,70,80,1,"vieux")
+    jeune = IFT(2,5,18,25,1,"jeune")
+    moyen = IFT(20,25,45, 55, 1, "moyen")
+    age.add(vieux)
+    age.add(jeune)
+    age.add(moyen)
+    print(age.v(15))
+    print(age.v(24))
+
+
+
+
+
+
     vieux = NFT(35, 40,45, 0.93, "vieux")
-    vieux2 = NFT(24, 30, 37, 0.4, "vieux")
+    vieux2 = NFT(24, 30, 37, 0.4, "jeune")
     Valeurs = list(range(20, 100))
     New1 = [vieux.v(i) for i in Valeurs]
     New2 = [vieux2.v(i) for i in Valeurs]
