@@ -116,6 +116,7 @@ if __name__ == "__main__":
     vieux = NFT(35, 40,45, 0.93, "vieux")
     vieux2 = NFT(24, 30, 37, 0.4, "jeune")
     Valeurs = list(range(20, 100))
+
     New1 = [vieux.v(i) for i in Valeurs]
     New2 = [vieux2.v(i) for i in Valeurs]
     vieux = vieux.add(vieux2)
