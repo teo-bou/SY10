@@ -48,16 +48,33 @@ class IFT():
         return f" {self.label} : ({self.a}, {self.b}, {self.c}, {self.d})"
 
     def mul(self, alpha):
-        self.a = alpha * self.a
-        self.b = alpha * self.b
-        self.c = alpha * self.c
-        self.d = alpha * self.d
+        a = alpha * self.a
+        b = alpha * self.b
+        c = alpha * self.c
+        d = alpha * self.d
+        return IFT(a,b,c,d,self.h, self.label)
 
+    def add(self, ift):
+        if self.h > ift.h:
+            ift1 = self.tr(ift.h)
+            return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
+        else:
+            ift1 = self
+            ift = ift.tr(self.h)
+            return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
+
+    # Mult à faire et diviser
     def tr(self, h):
         if h > self.h:
             raise ValueError("H est au dessus de la hauteur de l'intervalle")
-        if h == self.h:
+        elif h == self.h:
             return self
+        else:
+            b = h*(self.b-self.a)/self.h+self.a
+            c = - h*(self.d - self.c)/self.h +self.d
+            return IFT(self.a,b,c,self.d, h,self.label)
+
+
 
 
 class Classe():
@@ -83,11 +100,19 @@ class NFT(IFT):
 
 
 if __name__ == "__main__":
-    vieux = IFT(35, 40, 47, 53, 0.93, "vieux")
+    vieux = NFT(35, 40,45, 0.93, "vieux")
+    vieux2 = NFT(24, 30, 37, 0.4, "vieux")
     Valeurs = list(range(20, 100))
+    New1 = [vieux.v(i) for i in Valeurs]
+    New2 = [vieux2.v(i) for i in Valeurs]
+    vieux = vieux.add(vieux2)
+
 
     New = [vieux.v(i) for i in Valeurs]
+
     plt.plot(Valeurs, New)
+    plt.plot(Valeurs, New1)
+    plt.plot(Valeurs, New2)
     plt.show()
 
     print(vieux.alpha_coupe(0.98))
