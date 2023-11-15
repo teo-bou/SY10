@@ -101,8 +101,8 @@ class Table_2():
         df = pd.read_csv(rules)
         self.rules = df
         self.lb_classe1 = self.rules.columns.values[1:]
-        self.lb_classe2 = list(self.rules["Index"])
-        self.rules.set_index("Index")
+        self.lb_classe2 = list(self.rules["tb"])
+        self.rules.set_index('tb', inplace=True, drop=True)
         print(self.rules.head())
 
         self.lb_result = [ i  for i in np.unique(self.rules) if i not in self.lb_classe2]
@@ -115,11 +115,15 @@ class Table_2():
             raise ValueError(f"Classe 2 ne matche pas les valeurs{self.lb_classe2}")
         resultat = {key : 0 for key in self.lb_result}
         for classe1 in [ key for key in val1.keys() if val1[key]!=0]:
+            ligne = self.rules[classe1]
             for classe2 in [key for key in val2.keys() if val2[key] != 0]:
-                print(classe1, classe2)
+                result = ligne.loc[classe2]
+                val_result = tnorme(val1[classe1], val2[classe2])
+                resultat[result] = tconorme(resultat[result], val_result)
 
-                print(self.rules.loc['normal'])
-                print(classe_result)
+        return resultat
+
+
 
 
 
@@ -143,7 +147,7 @@ if __name__ == "__main__":
     age1.add(jeune1)
     age1.add(moyen1)
 
-    a.inference(age.v(24), age1.v(24))
+    print(a.inference(age.v(53), age1.v(53)))
 
 
 
