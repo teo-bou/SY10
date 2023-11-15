@@ -1,3 +1,5 @@
+import pandas as pd
+import numpy as np
 class intervalle():
     def __init__(self, a=None, b=None):
         self.a = a
@@ -94,48 +96,83 @@ class Classe():
         return appartenance
 
 
+class Table_2():
+    def __init__(self, rules):
+        df = pd.read_csv(rules)
+        self.rules = df
+        self.lb_classe1 = self.rules.columns.values[1:]
+        self.lb_classe2 = list(self.rules["Index"])
+        self.rules.set_index("Index")
+        print(self.rules.head())
+
+        self.lb_result = [ i  for i in np.unique(self.rules) if i not in self.lb_classe2]
+
+    def inference(self,val1, val2, tconorme = max, tnorme = min):
+        print(list(val1.keys()))
+        if not (list(val1.keys()) == self.lb_classe1).all():
+            raise ValueError(f"Classe 1 ne matche pas les valeurs {self.lb_classe1}")
+        if not (list(val2.keys()) == self.lb_classe2):
+            raise ValueError(f"Classe 2 ne matche pas les valeurs{self.lb_classe2}")
+        resultat = {key : 0 for key in self.lb_result}
+        for classe1 in [ key for key in val1.keys() if val1[key]!=0]:
+            for classe2 in [key for key in val2.keys() if val2[key] != 0]:
+                print(classe1, classe2)
+
+                print(self.rules.loc['normal'])
+                print(classe_result)
+
+
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
+    a = Table_2("testcsv.csv")
 
     age = Classe("age")
-    vieux = IFT(50,60,70,80,1,"vieux")
-    jeune = IFT(2,5,18,25,1,"jeune")
-    moyen = IFT(20,25,45, 55, 1, "moyen")
+    vieux = IFT(50,60,70,80,1,"faible")
+    jeune = IFT(2,5,18,25,1,"moyen")
+    moyen = IFT(20,25,45, 55, 1, "fort")
     age.add(vieux)
     age.add(jeune)
     age.add(moyen)
-    print(age.v(15))
-    print(age.v(24))
+
+    age1 = Classe("age")
+    vieux1 = IFT(50, 60, 70, 80, 1, "bas")
+    jeune1 = IFT(2, 5, 18, 25, 1, "normal")
+    moyen1 = IFT(20, 25, 45, 55, 1, "haut")
+    age1.add(vieux1)
+    age1.add(jeune1)
+    age1.add(moyen1)
+
+    a.inference(age.v(24), age1.v(24))
 
 
 
-
-
-
-    vieux = NFT(35, 40,45, 0.93, "vieux")
-    vieux2 = NFT(24, 30, 37, 0.4, "jeune")
-    Valeurs = list(range(20, 100))
-
-    New1 = [vieux.v(i) for i in Valeurs]
-    New2 = [vieux2.v(i) for i in Valeurs]
-    vieux = vieux.add(vieux2)
-
-
-    New = [vieux.v(i) for i in Valeurs]
-
-    plt.plot(Valeurs, New)
-    plt.plot(Valeurs, New1)
-    plt.plot(Valeurs, New2)
-    plt.show()
-
-    print(vieux.alpha_coupe(0.98))
-
-    vieux = NFT(35, 40, 50, 1, "vieuxNFT")
-    Valeurs = list(range(20, 100))
-
-    New = [vieux.v(i) for i in Valeurs]
-    plt.plot(Valeurs, New)
-    plt.show()
-
-
+    #
+    #
+    #
+    # vieux = NFT(35, 40,45, 0.93, "vieux")
+    # vieux2 = NFT(24, 30, 37, 0.4, "jeune")
+    # Valeurs = list(range(20, 100))
+    #
+    # New1 = [vieux.v(i) for i in Valeurs]
+    # New2 = [vieux2.v(i) for i in Valeurs]
+    # vieux = vieux.add(vieux2)
+    #
+    #
+    # New = [vieux.v(i) for i in Valeurs]
+    #
+    # plt.plot(Valeurs, New)
+    # plt.plot(Valeurs, New1)
+    # plt.plot(Valeurs, New2)
+    # plt.show()
+    #
+    # print(vieux.alpha_coupe(0.98))
+    #
+    # vieux = NFT(35, 40, 50, 1, "vieuxNFT")
+    # Valeurs = list(range(20, 100))
+    #
+    # New = [vieux.v(i) for i in Valeurs]
+    # plt.plot(Valeurs, New)
+    # plt.show()
+    #
+    #
