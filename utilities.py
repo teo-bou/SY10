@@ -17,3 +17,23 @@ class IFT():
         return f" {label} : ({a}, {b}, {c}, {d})"
     
         
+        
+        
+        
+class Classe():
+    def __init__(self, label):
+        self.label = label
+        self.classes = []
+        self.valeurs = []
+    def add(self, ift):
+        self.valeurs.append[ift]
+        self.classes.append[ift.label] 
+    def v(self, x):
+        appartenance = {}
+        for ift in valeurs:
+            appartenance[ift.label] = ift.v(x)
+        return appartenance
+
+            
+            
+            
