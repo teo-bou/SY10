@@ -101,17 +101,17 @@ class Classe():
     # rajouter une méthode pour plot la classe en fonction de son intervalle
 
     def possibilite(self, poly):
-        gpd.GeoSeries(poly).plot()
+        resultat = {key.label : 0 for key in self.valeurs}
         for ift in self.valeurs:
-            print(ift)
-            print(poly)
+            name = ift.label
             shape_IFT = sp.Polygon(list(set([(ift.a,0),(ift.b,ift.h),(ift.c,ift.h),(ift.d,0)])))
             if shape_IFT.intersects(poly):
                 shape_IFT = poly.intersection(shape_IFT)
-                print(max(shape_IFT.exterior.coords.xy[1]))
-                gpd.GeoSeries(shape_IFT).plot()
-        plt.show()
-    def defuz(self, resultat):
+                h = max(shape_IFT.exterior.coords.xy[1])
+                resultat[name] = h
+
+        return resultat
+    def union(self, resultat):
         minimum, maximum = min([ift.a for ift in self.valeurs if resultat[ift.label]>0]), max([ift.d for ift in self.valeurs if resultat[ift.label]>0])
         poly = sp.Polygon([(minimum,-1),(minimum, 0), (maximum, 0), (maximum, -1) ])
         for ift in self.valeurs:
@@ -125,21 +125,21 @@ class Classe():
                 poly = sp.unary_union([poly,sp.make_valid(sp.Polygon(list(set([(a,0),(b,h),(c,h),(d,0)]))))])
 
         return poly
-    def eval(self, resultat):
-        poly = self.defuz(resultat)
-        return self.v(poly.centroid.x)
+    def defuz(self, resultat):
+        poly = self.union(resultat)
+        return poly.centroid.x
 
 class Table():
-    def __init__(self, rules, label=""):
-        self.label = label
+    def __init__(self, rules):
+
         self.rules = pd.read_csv(rules)
+        self.label = self.rules.columns.values[0]
         self.lb_classe1 = self.rules.columns.values[1:]
-        self.lb_classe2 = list(self.rules["tb"])
-        self.rules.set_index('tb', inplace=True, drop=True)
+        self.lb_classe2 = list(self.rules[self.label])
+        self.rules.set_index(self.label, inplace=True, drop=True)
         self.lb_result = [ i  for i in np.unique(self.rules) if i not in self.lb_classe2]
 
     def inference(self,val1, val2, tconorme = max, tnorme = min):
-        print(list(val1.keys()))
         if not (list(val1.keys()) == self.lb_classe1).all():
             raise ValueError(f"Classe 1 ne matche pas les valeurs {self.lb_classe1}")
         if not (list(val2.keys()) == self.lb_classe2):
@@ -192,9 +192,9 @@ if __name__ == "__main__":
     age.add(jeune)
     age.add(moyen)
     print(age.v(5))
-    poly = age.defuz(age.v(5))
+    poly = age.union(age.v(5))
 
-    age.possibilite(poly)
+    print(age.defuz(age.v(5)))
     age1 = Classe("age")
     vieux1 = IFT(50, 60, 70, 80, 1, "bas")
     jeune1 = IFT(2, 5, 18, 25, 1, "normal")
