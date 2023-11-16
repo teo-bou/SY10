@@ -96,15 +96,13 @@ class Classe():
         return appartenance
 
 
-class Table_2():
-    def __init__(self, rules):
-        df = pd.read_csv(rules)
-        self.rules = df
+class Table():
+    def __init__(self, rules, label=""):
+        self.label = label
+        self.rules = pd.read_csv(rules)
         self.lb_classe1 = self.rules.columns.values[1:]
-        self.lb_classe2 = list(self.rules["Index"])
-        self.rules.set_index("Index")
-        print(self.rules.head())
-
+        self.lb_classe2 = list(self.rules["tb"])
+        self.rules.set_index('tb', inplace=True, drop=True)
         self.lb_result = [ i  for i in np.unique(self.rules) if i not in self.lb_classe2]
 
     def inference(self,val1, val2, tconorme = max, tnorme = min):
@@ -115,17 +113,39 @@ class Table_2():
             raise ValueError(f"Classe 2 ne matche pas les valeurs{self.lb_classe2}")
         resultat = {key : 0 for key in self.lb_result}
         for classe1 in [ key for key in val1.keys() if val1[key]!=0]:
+            ligne = self.rules[classe1]
             for classe2 in [key for key in val2.keys() if val2[key] != 0]:
-                print(classe1, classe2)
+                result = ligne.loc[classe2]
+                val_result = tnorme(val1[classe1], val2[classe2])
+                resultat[result] = tconorme(resultat[result], val_result)
 
-                print(self.rules.loc['normal'])
-                print(classe_result)
+        return resultat
+class Table_mult():
+    def __init__(self, classe,  *tables ):
+        self.lb_classe = classe.classes
+        if len(tables)!=len(self.lb_classe):
+            raise ValueError(f"Pas assez de tables : {len(tables)} < {len(self.lb_classe)}")
+        self.table = {key  : table for key, table in zip(self.lb_classe, tables)}
+        self.lb_result = []
+        for item in tables:
+            self.lb_result+=item.lb_result
+        self.lb_result = list(set(self.lb_result))
+    def inference(self, val_classe, val1, val2, tconorme = max, tnorme = min):
+        resultat = {key : 0 for key in self.lb_result}
+        for key in val_classe.keys():
 
+            degre = val_classe[key]
+
+            table = self.table[key]
+            result_tmp = table.inference(val1, val2, tconorme, tnorme)
+            resultat = {idx : tconorme(resultat[idx], tnorme(result_tmp[idx], degre)) for idx in resultat.keys()}
+
+        return resultat
 
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
-    a = Table_2("testcsv.csv")
+    a = Table("testcsv.csv")
 
     age = Classe("age")
     vieux = IFT(50,60,70,80,1,"faible")
@@ -143,10 +163,10 @@ if __name__ == "__main__":
     age1.add(jeune1)
     age1.add(moyen1)
 
-    a.inference(age.v(24), age1.v(24))
+    print(a.inference(age.v(53), age1.v(53)))
 
-
-
+    a2 = Table_mult(age1, a,a, a)
+    print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
     #
     #
     #
