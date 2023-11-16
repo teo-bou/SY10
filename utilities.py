@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import shapely as sp
 class intervalle():
     def __init__(self, a=None, b=None):
         self.a = a
@@ -80,10 +81,11 @@ class NFT(IFT):
 
 
 class Classe():
-    def __init__(self, label):
+    def __init__(self, label, range = intervalle()):
         self.label = label
         self.classes = []
         self.valeurs = []
+        self.range = intervalle
 
     def add(self, ift):
         self.valeurs.append(ift)
@@ -94,6 +96,23 @@ class Classe():
         for ift in self.valeurs:
             appartenance[ift.label] = ift.v(x)
         return appartenance
+
+    # rajouter une méthode pour plot la classe en fonction de son intervalle
+
+    def defuz(self, resultat):
+        minimum, maximum = min([ift.a for ift in self.valeurs]), max([ift.d for ift in self.valeurs])
+        poly = sp.Polygon([(minimum,-1),(minimum, 0), (maximum, 0), (maximum, -1) ])
+        for ift in self.valeurs:
+            degree = resultat[ift.label]
+            if degree > 0:
+                ift = ift.tr(degree)
+
+                a,b,c,d,h = ift.a,ift.b,ift.c,ift.d,ift.h
+                minimum = min(minimum, a)
+                maximum = max(maximum, d)
+                poly = sp.unary_union([poly,sp.make_valid(sp.Polygon(list(set([(a,0),(b,h),(c,h),(d,0)]))))])
+
+        print(poly.centroid)
 
 
 class Table():
@@ -120,6 +139,10 @@ class Table():
                 resultat[result] = tconorme(resultat[result], val_result)
 
         return resultat
+
+
+
+
 class Table_mult():
     def __init__(self, classe,  *tables ):
         self.lb_classe = classe.classes
@@ -154,6 +177,8 @@ if __name__ == "__main__":
     age.add(vieux)
     age.add(jeune)
     age.add(moyen)
+    print(age.v(5))
+    age.defuz(age.v(5))
 
     age1 = Classe("age")
     vieux1 = IFT(50, 60, 70, 80, 1, "bas")
