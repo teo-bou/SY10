@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import shapely as sp
+#import shapely as sp
 class intervalle():
     def __init__(self, a=None, b=None):
         self.a = a
@@ -63,7 +63,33 @@ class IFT():
             ift = ift.tr(self.h)
             return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
 
-    # Mult à faire et diviser
+    def times(self, ift):
+        #A = self
+        #B = ift
+        if self.h > ift.h:
+            ift1 = self.tr(ift.h)
+            return IFT(ift1.a * ift.a, ift1.b * ift.b, ift1.c * ift.c, ift1.d * ift.d, ift.h, self.label)
+
+        else:
+            ift1 = self
+            ift = ift.tr(self.h)
+            return IFT(ift1.a * ift.a, ift1.b * ift.b, ift1.c * ift.c, ift1.d * ift.d, ift.h, self.label)
+
+    def div(self,ift):
+
+        if B < 0 :
+            print ("pas possible")
+
+        else:
+            if self.h > ift.h:
+                ift1 = self.tr(ift.h)
+                return IFT(ift1.a / ift.d, ift1.b / ift.c, ift1.c / ift.b, ift1.d / ift.a, ift.h, self.label)
+
+            else:
+                ift1 = self
+                ift = ift.tr(self.h)
+                return IFT(ift1.a / ift.d, ift1.b / ift.c, ift1.c / ift.b, ift1.d / ift.a, ift.h, self.label)
+
     def tr(self, h):
         if h > self.h:
             raise ValueError("H est au dessus de la hauteur de l'intervalle")
@@ -85,7 +111,7 @@ class Classe():
         self.label = label
         self.classes = []
         self.valeurs = []
-        self.range = intervalle
+        self.range = range
 
     def add(self, ift):
         self.valeurs.append(ift)
@@ -97,7 +123,20 @@ class Classe():
             appartenance[ift.label] = ift.v(x)
         return appartenance
 
-    # rajouter une méthode pour plot la classe en fonction de son intervalle
+    def plot(self, pas = 0.5):
+        a = self.range.a
+        b = self.range.b
+        X = np.arange(a,b,pas)
+
+        for ift in self.valeurs:
+            y = [ift.v(x) for x in X]
+            plt.plot(X,y)
+
+        plt.legend([ift for ift in self.valeurs])
+        plt.show()
+
+
+
 
     def defuz(self, resultat):
         minimum, maximum = min([ift.a for ift in self.valeurs]), max([ift.d for ift in self.valeurs])
@@ -168,9 +207,9 @@ class Table_mult():
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
-    a = Table("testcsv.csv")
+    test = intervalle(0,100)
 
-    age = Classe("age")
+    age = Classe("age", range=test)
     vieux = IFT(50,60,70,80,1,"faible")
     jeune = IFT(2,5,18,25,1,"moyen")
     moyen = IFT(20,25,45, 55, 1, "fort")
@@ -178,7 +217,8 @@ if __name__ == "__main__":
     age.add(jeune)
     age.add(moyen)
     print(age.v(5))
-    age.defuz(age.v(5))
+    age.plot()
+    #age.defuz(age.v(5))
 
     age1 = Classe("age")
     vieux1 = IFT(50, 60, 70, 80, 1, "bas")
@@ -188,10 +228,11 @@ if __name__ == "__main__":
     age1.add(jeune1)
     age1.add(moyen1)
 
-    print(a.inference(age.v(53), age1.v(53)))
+    #a.inference(age.v(24), age1.v(24))
 
-    a2 = Table_mult(age1, a,a, a)
-    print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
+
+    #a2 = Table_mult(age1, a,a, a)
+    #print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
     #
     #
     #
