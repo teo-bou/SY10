@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import shapely as sp
+import geopandas as gpd
 class intervalle():
     def __init__(self, a=None, b=None):
         self.a = a
@@ -99,8 +100,19 @@ class Classe():
 
     # rajouter une méthode pour plot la classe en fonction de son intervalle
 
+    def possibilite(self, poly):
+        gpd.GeoSeries(poly).plot()
+        for ift in self.valeurs:
+            print(ift)
+            print(poly)
+            shape_IFT = sp.Polygon(list(set([(ift.a,0),(ift.b,ift.h),(ift.c,ift.h),(ift.d,0)])))
+            if shape_IFT.intersects(poly):
+                shape_IFT = poly.intersection(shape_IFT)
+                print(max(shape_IFT.exterior.coords.xy[1]))
+                gpd.GeoSeries(shape_IFT).plot()
+        plt.show()
     def defuz(self, resultat):
-        minimum, maximum = min([ift.a for ift in self.valeurs]), max([ift.d for ift in self.valeurs])
+        minimum, maximum = min([ift.a for ift in self.valeurs if resultat[ift.label]>0]), max([ift.d for ift in self.valeurs if resultat[ift.label]>0])
         poly = sp.Polygon([(minimum,-1),(minimum, 0), (maximum, 0), (maximum, -1) ])
         for ift in self.valeurs:
             degree = resultat[ift.label]
@@ -112,8 +124,10 @@ class Classe():
                 maximum = max(maximum, d)
                 poly = sp.unary_union([poly,sp.make_valid(sp.Polygon(list(set([(a,0),(b,h),(c,h),(d,0)]))))])
 
-        print(poly.centroid)
-
+        return poly
+    def eval(self, resultat):
+        poly = self.defuz(resultat)
+        return self.v(poly.centroid.x)
 
 class Table():
     def __init__(self, rules, label=""):
@@ -178,8 +192,9 @@ if __name__ == "__main__":
     age.add(jeune)
     age.add(moyen)
     print(age.v(5))
-    age.defuz(age.v(5))
+    poly = age.defuz(age.v(5))
 
+    age.possibilite(poly)
     age1 = Classe("age")
     vieux1 = IFT(50, 60, 70, 80, 1, "bas")
     jeune1 = IFT(2, 5, 18, 25, 1, "normal")
