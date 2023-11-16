@@ -96,15 +96,13 @@ class Classe():
         return appartenance
 
 
-class Table_2():
-    def __init__(self, rules):
-        df = pd.read_csv(rules)
-        self.rules = df
+class Table():
+    def __init__(self, rules, label=""):
+        self.label = label
+        self.rules = pd.read_csv(rules)
         self.lb_classe1 = self.rules.columns.values[1:]
         self.lb_classe2 = list(self.rules["tb"])
         self.rules.set_index('tb', inplace=True, drop=True)
-        print(self.rules.head())
-
         self.lb_result = [ i  for i in np.unique(self.rules) if i not in self.lb_classe2]
 
     def inference(self,val1, val2, tconorme = max, tnorme = min):
@@ -122,14 +120,32 @@ class Table_2():
                 resultat[result] = tconorme(resultat[result], val_result)
 
         return resultat
+class Table_mult():
+    def __init__(self, classe,  *tables ):
+        self.lb_classe = classe.classes
+        if len(tables)!=len(self.lb_classe):
+            raise ValueError(f"Pas assez de tables : {len(tables)} < {len(self.lb_classe)}")
+        self.table = {key  : table for key, table in zip(self.lb_classe, tables)}
+        self.lb_result = []
+        for item in tables:
+            self.lb_result+=item.lb_result
+        self.lb_result = list(set(self.lb_result))
+    def inference(self, val_classe, val1, val2, tconorme = max, tnorme = min):
+        resultat = {key : 0 for key in self.lb_result}
+        for key in val_classe.keys():
 
+            degre = val_classe[key]
 
+            table = self.table[key]
+            result_tmp = table.inference(val1, val2, tconorme, tnorme)
+            resultat = {idx : tconorme(resultat[idx], tnorme(result_tmp[idx], degre)) for idx in resultat.keys()}
 
+        return resultat
 
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
-    a = Table_2("testcsv.csv")
+    a = Table("testcsv.csv")
 
     age = Classe("age")
     vieux = IFT(50,60,70,80,1,"faible")
@@ -149,8 +165,8 @@ if __name__ == "__main__":
 
     print(a.inference(age.v(53), age1.v(53)))
 
-
-
+    a2 = Table_mult(age1, a,a, a)
+    print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
     #
     #
     #
