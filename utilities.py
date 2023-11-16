@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-#import shapely as sp
+import shapely as sp
+import geopandas as gpd
 class intervalle():
     def __init__(self, a=None, b=None):
         self.a = a
@@ -139,7 +140,7 @@ class Classe():
 
 
     def defuz(self, resultat):
-        minimum, maximum = min([ift.a for ift in self.valeurs]), max([ift.d for ift in self.valeurs])
+        minimum, maximum = min([ift.a for ift in self.valeurs if resultat[ift.label]>0]), max([ift.d for ift in self.valeurs if resultat[ift.label]>0])
         poly = sp.Polygon([(minimum,-1),(minimum, 0), (maximum, 0), (maximum, -1) ])
         for ift in self.valeurs:
             degree = resultat[ift.label]
@@ -151,8 +152,10 @@ class Classe():
                 maximum = max(maximum, d)
                 poly = sp.unary_union([poly,sp.make_valid(sp.Polygon(list(set([(a,0),(b,h),(c,h),(d,0)]))))])
 
-        print(poly.centroid)
-
+        return poly
+    def eval(self, resultat):
+        poly = self.defuz(resultat)
+        return self.v(poly.centroid.x)
 
 class Table():
     def __init__(self, rules, label=""):
@@ -207,9 +210,9 @@ class Table_mult():
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
-    test = intervalle(0,100)
+    a = Table("testcsv.csv")
 
-    age = Classe("age", range=test)
+    age = Classe("age")
     vieux = IFT(50,60,70,80,1,"faible")
     jeune = IFT(2,5,18,25,1,"moyen")
     moyen = IFT(20,25,45, 55, 1, "fort")
@@ -217,8 +220,7 @@ if __name__ == "__main__":
     age.add(jeune)
     age.add(moyen)
     print(age.v(5))
-    age.plot()
-    #age.defuz(age.v(5))
+    age.defuz(age.v(5))
 
     age1 = Classe("age")
     vieux1 = IFT(50, 60, 70, 80, 1, "bas")
@@ -228,11 +230,10 @@ if __name__ == "__main__":
     age1.add(jeune1)
     age1.add(moyen1)
 
-    #a.inference(age.v(24), age1.v(24))
+    print(a.inference(age.v(53), age1.v(53)))
 
-
-    #a2 = Table_mult(age1, a,a, a)
-    #print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
+    a2 = Table_mult(age1, a,a, a)
+    print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
     #
     #
     #
