@@ -2,7 +2,14 @@ import pandas as pd
 import numpy as np
 import shapely as sp
 import geopandas as gpd
+
 class intervalle():
+    """
+    Cette classe définit un intervalle net et continu. 
+    (car il ne prend en compte que 2 valeurs)
+    """
+
+
     def __init__(self, a=None, b=None):
         self.a = a
         self.b = b
@@ -12,9 +19,61 @@ class intervalle():
             return "Intervalle vide"
         else:
             return f"[{self.a},{self.b}]"
+    
+    def __str__(self) :
+        return "[" + str(self.a1) + ", " + str(self.a2) + "]"
+
+    def __add__(self, other) :
+        """
+        addition de 2 intervalles
+        """
+        return intervalle(self.a1 + other.a1, self.a2 + other.a2)
+
+    def __neg__(self) :
+        """
+        donne l'opposé d'un intervalle
+        -A = A.__neg__()
+        """
+        return intervalle(-self.a2, -self.a1)
+
+    def __sub__(self, other) :
+        return self + (-other)
+
+    def __mul__(self, other) :
+        return intervalle(max([self.a1 * other.b1, self.a1 * other.b2, self.a2 * other.b1, self.a2 * other.b2]), 
+                              max([self.b1 * other.a1, self.b1 * other.a2, self.b2 * other.a1, self.b2 * other.a2]))
+
+    def __pow__(self, value) :
+        """
+        sert uniquement à donner l'inverse d'un intervalle : A^1
+        peut s'utiliser ainsi : 
+        inverse = A ** -1
+        """
+        if value != -1 : 
+            raise ValueError("Only -1 is supported")
+        if self.a1 == 0 or self.a2 == 0 : 
+            raise ValueError("Only non-zero intervals are supported")
+        if self.a1 <= 0 <= self.a2 : 
+            raise ValueError("Only  strictly positive or strictly négative intervals are supported by this operation.")
+        return intervalle(1/self.a2, 1/self.a1)
+
+    def __div__(self, other) :
+        """
+        Divisions de deux intervalles : A / B
+        """
+        return self * (other**-1)
+
+    def union(self, other) :
+        if self.a2 < other.a1 or other.a2 < self.a1 :
+            raise ValueError("The intervals must be joined")
+
+        return intervalle(min(self.a1, other.a1), max(self.a2, other.a2))
 
 
 class IFT():
+    """
+    Classe qui définit un intervalle flou trapézoidal 
+    """
     def __init__(self, a, b, c, d, h, label):
 
         self.a = a
@@ -33,7 +92,7 @@ class IFT():
             return intervalle()
 
     def v(self, x):
-        """
+        """dans la
         donne la valer d'appartenance d'un point à l'intervalle
         """
         if x < self.a:
@@ -84,6 +143,9 @@ class IFT():
             return IFT(self.a,b,c,self.d, h,self.label)
 
 class NFT(IFT):
+    """
+    classe qui définit un nombre flou triangulaire
+    """
     def __init__(self, a, b, c, h, label):
         super().__init__(self, a, b, b, c, h, label)
  # Rajouter les autres types differents ! réimplémenter les mutilications pour intervalles flous purs
@@ -148,11 +210,17 @@ class Classe():
         return poly # Le polygone est l'ensemble des troncatures de toute les classe activée. Son barycentre est le résulta de la defuzzification
     
     def eval(self, resultat):
+        """
+        donne la valeur finale déffuzifié à partir du dictionnaire d'appartenance au IFTs
+        """
         poly = self.defuz(resultat)
         return self.v(poly.centroid.x)
 
 class Table():
     def __init__(self, rules, label=""):
+        """
+        crée un système d'inférence flou à partir d'un csv
+        """
         self.label = label
         self.rules = pd.read_csv(rules)
         self.lb_classe1 = self.rules.columns.values[1:]
@@ -160,7 +228,8 @@ class Table():
         self.rules.set_index('tb', inplace=True, drop=True)
         self.lb_result = [ i  for i in np.unique(self.rules) if i not in self.lb_classe2]
 
-    def inference(self,val1, val2, tconorme = max, tnorme = min):
+    def inference(self,val1 : dict, val2 : dict, tconorme = max, tnorme = min):
+
         print(list(val1.keys()))
         if not (list(val1.keys()) == self.lb_classe1).all():
             raise ValueError(f"Classe 1 ne matche pas les valeurs {self.lb_classe1}")
