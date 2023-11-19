@@ -64,7 +64,7 @@ class IFT():
         ift = ift1 + ift2
         """
         if self.h > ift.h:
-            ift1 = self.tr(ift.h)
+            ift1 = self.troncature(ift.h)
             return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
         else:
             ift1 = self
@@ -72,7 +72,8 @@ class IFT():
             return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
 
     # Mult à faire et diviser
-    def tr(self, h):
+    def troncature(self, h):
+        """Fait une troncature de l'ITF en h"""
         if h > self.h:
             raise ValueError("H est au dessus de la hauteur de l'intervalle")
         elif h == self.h:
@@ -115,7 +116,7 @@ class Classe():
 
     def possibilite(self, poly):
         """
-        dessine les IFTs de la classe
+        dessine les intersections de l'intervalle avec le polygone résultant de la deffuzzification
         """
         gpd.GeoSeries(poly).plot()
         for ift in self.valeurs:
@@ -129,19 +130,22 @@ class Classe():
         plt.show()
 
     def defuz(self, resultat):
+        """
+        defuzzification à partir du dictionnaire d'appartenance au classes.
+        retourne un polygone  résultat de l'union des troncatures et du rectangle qui s'étend de la classe activée la plus petite à la classe activée la plus grande
+        """
         minimum, maximum = min([ift.a for ift in self.valeurs if resultat[ift.label]>0]), max([ift.d for ift in self.valeurs if resultat[ift.label]>0])
-        poly = sp.Polygon([(minimum,-1),(minimum, 0), (maximum, 0), (maximum, -1) ])
+        poly = sp.Polygon([(minimum,-1),(minimum, 0), (maximum, 0), (maximum, -1) ])  # Un rectangle qui s'étend de la classe activée la plus petite à la classe activée la plus grande
         for ift in self.valeurs:
             degree = resultat[ift.label]
             if degree > 0:
                 ift = ift.tr(degree)
 
-                a,b,c,d,h = ift.a,ift.b,ift.c,ift.d,ift.h
-                minimum = min(minimum, a)
-                maximum = max(maximum, d)
-                poly = sp.unary_union([poly,sp.make_valid(sp.Polygon(list(set([(a,0),(b,h),(c,h),(d,0)]))))])
+                minimum = min(minimum, ift.a)
+                maximum = max(maximum, ift.d)
+                poly = sp.unary_union([poly,sp.make_valid(sp.Polygon(list(set([(ift.a,0),(ift.b,ift.h),(ift.c,ift.h),(ift.d,0)]))))]) 
 
-        return poly
+        return poly # Le polygone est l'ensemble des troncatures de toute les classe activée. Son barycentre est le résulta de la defuzzification
     
     def eval(self, resultat):
         poly = self.defuz(resultat)
