@@ -111,6 +111,9 @@ class IFT():
         return f" {self.label} : ({self.a}, {self.b}, {self.c}, {self.d})"
 
     def mul(self, alpha):
+        """
+        cette classe sert à multiplier l'intervalle par un scalaire
+        """
         a = alpha * self.a
         b = alpha * self.b
         c = alpha * self.c
@@ -121,15 +124,16 @@ class IFT():
         """
         Ajoute deux IFT . Peut etre appellée par l'addition : 
         ift = ift1 + ift2
+        le label concervé sera celui du premier IFT (ici ift1)
         """
         if self.h > ift.h:
             ift1 = self.troncature(ift.h)
-            return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
-        else:
+        else : 
             ift1 = self
-            ift = ift.tr(self.h)
-            return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
+        return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
 
+
+    
     # Mult à faire et diviser
     def troncature(self, h):
         """Fait une troncature de l'ITF en h"""
