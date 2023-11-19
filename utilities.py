@@ -33,6 +33,9 @@ class IFT():
             return intervalle()
 
     def v(self, x):
+        """
+        donne la valer d'appartenance d'un point à l'intervalle
+        """
         if x < self.a:
             return 0
         if x >= self.a and x <= self.b:
@@ -55,7 +58,11 @@ class IFT():
         d = alpha * self.d
         return IFT(a,b,c,d,self.h, self.label)
 
-    def add(self, ift):
+    def __add__(self, ift):
+        """
+        Ajoute deux IFT . Peut etre appellée par l'addition : 
+        ift = ift1 + ift2
+        """
         if self.h > ift.h:
             ift1 = self.tr(ift.h)
             return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
@@ -77,7 +84,7 @@ class IFT():
 
 class NFT(IFT):
     def __init__(self, a, b, c, h, label):
-        IFT.__init__(self, a, b, b, c, h, label)
+        super().__init__(self, a, b, b, c, h, label)
  # Rajouter les autres types differents ! réimplémenter les mutilications pour intervalles flous purs
 
 
@@ -88,19 +95,28 @@ class Classe():
         self.valeurs = []
         self.range = intervalle
 
-    def add(self, ift):
+    def ajouter(self, ift):
+        """
+        ajoute un IFT à la classe
+        """
         self.valeurs.append(ift)
         self.classes.append(ift.label)
 
     def v(self, x):
-        appartenance = {}
+        """
+        Renvoie la valeur d'appartenance de x à chaque IFT de la classe dans un dictionnaire.
+        """
+        appartenances = {}
         for ift in self.valeurs:
-            appartenance[ift.label] = ift.v(x)
-        return appartenance
+            appartenances[ift.label] = ift.v(x)
+        return appartenances
 
     # rajouter une méthode pour plot la classe en fonction de son intervalle
 
     def possibilite(self, poly):
+        """
+        dessine les IFTs de la classe
+        """
         gpd.GeoSeries(poly).plot()
         for ift in self.valeurs:
             print(ift)
@@ -111,6 +127,7 @@ class Classe():
                 print(max(shape_IFT.exterior.coords.xy[1]))
                 gpd.GeoSeries(shape_IFT).plot()
         plt.show()
+
     def defuz(self, resultat):
         minimum, maximum = min([ift.a for ift in self.valeurs if resultat[ift.label]>0]), max([ift.d for ift in self.valeurs if resultat[ift.label]>0])
         poly = sp.Polygon([(minimum,-1),(minimum, 0), (maximum, 0), (maximum, -1) ])
@@ -125,6 +142,7 @@ class Classe():
                 poly = sp.unary_union([poly,sp.make_valid(sp.Polygon(list(set([(a,0),(b,h),(c,h),(d,0)]))))])
 
         return poly
+    
     def eval(self, resultat):
         poly = self.defuz(resultat)
         return self.v(poly.centroid.x)
@@ -182,15 +200,15 @@ class Table_mult():
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
-    a = Table("testcsv.csv")
+    #a = Table("SIFS/SIF 1.csv")
 
     age = Classe("age")
     vieux = IFT(50,60,70,80,1,"faible")
     jeune = IFT(2,5,18,25,1,"moyen")
     moyen = IFT(20,25,45, 55, 1, "fort")
-    age.add(vieux)
-    age.add(jeune)
-    age.add(moyen)
+    age.ajouter(vieux)
+    age.ajouter(jeune)
+    age.ajouter(moyen)
     print(age.v(5))
     poly = age.defuz(age.v(5))
 
@@ -199,14 +217,14 @@ if __name__ == "__main__":
     vieux1 = IFT(50, 60, 70, 80, 1, "bas")
     jeune1 = IFT(2, 5, 18, 25, 1, "normal")
     moyen1 = IFT(20, 25, 45, 55, 1, "haut")
-    age1.add(vieux1)
-    age1.add(jeune1)
-    age1.add(moyen1)
+    age1.ajouter(vieux1)
+    age1.ajouter(jeune1)
+    age1.ajouter(moyen1)
 
-    print(a.inference(age.v(53), age1.v(53)))
+    #print(a.inference(age.v(53), age1.v(53)))
 
-    a2 = Table_mult(age1, a,a, a)
-    print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
+    #a2 = Table_mult(age1, a,a, a)
+    #print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
     #
     #
     #
