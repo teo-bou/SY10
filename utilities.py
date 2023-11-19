@@ -49,11 +49,11 @@ class intervalle():
         """
         if value != -1 : 
             raise ValueError("Only -1 is supported")
-        if self.a1 == 0 or self.a2 == 0 : 
+        if self.a == 0 or self.b == 0 : 
             raise ValueError("Only non-zero intervals are supported")
-        if self.a1 <= 0 <= self.a2 : 
+        if self.a <= 0 <= self.b : 
             raise ValueError("Only  strictly positive or strictly négative intervals are supported by this operation.")
-        return intervalle(1/self.a2, 1/self.a1)
+        return intervalle(1/self.b, 1/self.a)
 
     def __div__(self, other) :
         """
@@ -62,10 +62,10 @@ class intervalle():
         return self * (other**-1)
 
     def union(self, other) :
-        if self.a2 < other.a1 or other.a2 < self.a1 :
+        if self.b < other.a or other.b < self.a :
             raise ValueError("The intervals must be joined")
 
-        return intervalle(min(self.a1, other.a1), max(self.a2, other.a2))
+        return intervalle(min(self.a, other.a), max(self.b, other.b))
 
 
 class IFT():
