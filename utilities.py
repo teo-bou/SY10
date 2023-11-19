@@ -20,28 +20,26 @@ class intervalle():
         else:
             return f"[{self.a},{self.b}]"
     
-    def __str__(self) :
-        return "[" + str(self.a1) + ", " + str(self.a2) + "]"
-
+    
     def __add__(self, other) :
         """
         addition de 2 intervalles
         """
-        return intervalle(self.a1 + other.a1, self.a2 + other.a2)
+        return intervalle(self.a + other.a, self.b + other.b)
 
     def __neg__(self) :
         """
         donne l'opposé d'un intervalle
         -A = A.__neg__()
         """
-        return intervalle(-self.a2, -self.a1)
+        return intervalle(-self.b, -self.a)
 
     def __sub__(self, other) :
         return self + (-other)
 
     def __mul__(self, other) :
-        return intervalle(max([self.a1 * other.b1, self.a1 * other.b2, self.a2 * other.b1, self.a2 * other.b2]), 
-                              max([self.b1 * other.a1, self.b1 * other.a2, self.b2 * other.a1, self.b2 * other.a2]))
+        return intervalle(max([self.a * other.a, self.a * other.b, self.b * other.a, self.b * other.b]), 
+                              min([self.a * other.a, self.a * other.b, self.b * other.a, self.b * other.b]))
 
     def __pow__(self, value) :
         """
