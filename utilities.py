@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import shapely as sp
-import geopandas as gpd
 
 class intervalle():
     """
@@ -91,7 +90,7 @@ class IFT():
 
     def v(self, x):
         """dans la
-        donne la valer d'appartenance d'un point à l'intervalle
+        donne la valeur d'appartenance d'un point à l'intervalle
         """
         if x < self.a:
             return 0
@@ -122,7 +121,7 @@ class IFT():
         """
         Ajoute deux IFT . Peut etre appellée par l'addition : 
         ift = ift1 + ift2
-        le label concervé sera celui du premier IFT (ici ift1)
+        le label conservé sera celui du premier IFT (ici ift1)
         """
         if self.h > ift.h:
             ift1 = self.troncature(ift.h)
@@ -131,8 +130,6 @@ class IFT():
         return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
 
 
-    
-    # Mult à faire et diviser
     def troncature(self, h):
         """Fait une troncature de l'ITF en h"""
         if h > self.h:
@@ -144,21 +141,26 @@ class IFT():
             c = - h*(self.d - self.c)/self.h +self.d
             return IFT(self.a,b,c,self.d, h,self.label)
 
+    def poly(self):
+        """Renvoie le polygone de l'IFT"""
+        return sp.Polygon(list(set([(self.a,0),(self.b,self.h),(self.c,self.h),(self.d,0)])))
+
+
+
+
 class NFT(IFT):
     """
     classe qui définit un nombre flou triangulaire
     """
     def __init__(self, a, b, c, h, label):
-        super().__init__(self, a, b, b, c, h, label)
- # Rajouter les autres types differents ! réimplémenter les mutilications pour intervalles flous purs
-
+        super().__init__( a, b, b, c, h, label)
 
 class Classe():
-    def __init__(self, label, range = intervalle()):
+    def __init__(self, label, range = None):
         self.label = label
         self.classes = []
         self.valeurs = []
-        self.range = intervalle
+        self.range = range
 
     def ajouter(self, ift):
         """
@@ -166,6 +168,10 @@ class Classe():
         """
         self.valeurs.append(ift)
         self.classes.append(ift.label)
+        if self.range != None:
+            self.range = intervalle(min(ift.a, self.range.a), max(ift.d, self.range.b))
+        else:
+            self.range = intervalle(ift.a, ift.d)
 
     def v(self, x):
         """
@@ -180,18 +186,15 @@ class Classe():
 
     def possibilite(self, poly):
         """
-        dessine les intersections de l'intervalle avec le polygone résultant de la deffuzzification
+       Permet d'évaluer une valeur floue (avec sa forme + calcul du degré de possibilité)
         """
-        gpd.GeoSeries(poly).plot()
+        resultat = {}
         for ift in self.valeurs:
-            print(ift)
-            print(poly)
-            shape_IFT = sp.Polygon(list(set([(ift.a,0),(ift.b,ift.h),(ift.c,ift.h),(ift.d,0)])))
+            shape_IFT = ift.poly()
             if shape_IFT.intersects(poly):
                 shape_IFT = poly.intersection(shape_IFT)
-                print(max(shape_IFT.exterior.coords.xy[1]))
-                gpd.GeoSeries(shape_IFT).plot()
-        plt.show()
+                resultat[ift.label] = max(shape_IFT.exterior.coords.xy[1])
+        return resultat
 
     def defuz(self, resultat):
         """
@@ -203,7 +206,7 @@ class Classe():
         for ift in self.valeurs:
             degree = resultat[ift.label]
             if degree > 0:
-                ift = ift.tr(degree)
+                ift = ift.troncature(degree)
 
                 minimum = min(minimum, ift.a)
                 maximum = max(maximum, ift.d)
@@ -218,25 +221,32 @@ class Classe():
         poly = self.defuz(resultat)
         return self.v(poly.centroid.x)
 
+    def __str__(self):
+        return f"{self.label} : {self.classes}"
 class Table():
-    def __init__(self, rules, label=""):
+    def __init__(self, rules):
         """
-        crée un système d'inférence flou à partir d'un csv
+        crée un système d'inférence flou à partir d'un csv, le séparateur est ;
         """
-        self.label = label
-        self.rules = pd.read_csv(rules)
+
+        try :
+            self.rules = pd.read_csv(rules)
+        except UnicodeError:
+            self.rules = pd.read_csv(rules, encoding='latin-1')
+
+        self.label = self.rules.columns.values[0]
         self.lb_classe1 = self.rules.columns.values[1:]
-        self.lb_classe2 = list(self.rules["tb"])
-        self.rules.set_index('tb', inplace=True, drop=True)
+        self.lb_classe2 = list(self.rules[self.label])
+        self.rules.set_index(self.label, inplace=True, drop=True)
         self.lb_result = [ i  for i in np.unique(self.rules) if i not in self.lb_classe2]
 
     def inference(self,val1 : dict, val2 : dict, tconorme = max, tnorme = min):
 
         print(list(val1.keys()))
         if not (list(val1.keys()) == self.lb_classe1).all():
-            raise ValueError(f"Classe 1 ne matche pas les valeurs {self.lb_classe1}")
+            raise ValueError(f" {val1.keys()} ne matche pas les valeurs {self.lb_classe1}")
         if not (list(val2.keys()) == self.lb_classe2):
-            raise ValueError(f"Classe 2 ne matche pas les valeurs{self.lb_classe2}")
+            raise ValueError(f"{val2.keys()} ne matche pas les valeurs{self.lb_classe2}")
         resultat = {key : 0 for key in self.lb_result}
         for classe1 in [ key for key in val1.keys() if val1[key]!=0]:
             ligne = self.rules[classe1]
@@ -275,12 +285,12 @@ class Table_mult():
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
-    #a = Table("SIFS/SIF 1.csv")
+    a = Table("SIFS/SIF 1.csv")
 
     age = Classe("age")
     vieux = IFT(50,60,70,80,1,"faible")
-    jeune = IFT(2,5,18,25,1,"moyen")
-    moyen = IFT(20,25,45, 55, 1, "fort")
+    jeune = IFT(2,5,18,25,1,"moyenne")
+    moyen = IFT(20,25,45, 55, 1, "elevee")
     age.ajouter(vieux)
     age.ajouter(jeune)
     age.ajouter(moyen)
@@ -289,43 +299,43 @@ if __name__ == "__main__":
 
     age.possibilite(poly)
     age1 = Classe("age")
-    vieux1 = IFT(50, 60, 70, 80, 1, "bas")
-    jeune1 = IFT(2, 5, 18, 25, 1, "normal")
-    moyen1 = IFT(20, 25, 45, 55, 1, "haut")
+    vieux1 = IFT(50, 60, 70, 80, 1, "faible")
+    jeune1 = IFT(2, 5, 18, 25, 1, "moyenne")
+    moyen1 = IFT(20, 25, 45, 55, 1, "elevee")
     age1.ajouter(vieux1)
     age1.ajouter(jeune1)
     age1.ajouter(moyen1)
 
-    #print(a.inference(age.v(53), age1.v(53)))
+    print(a.inference(age.v(53), age1.v(53)))
 
-    #a2 = Table_mult(age1, a,a, a)
-    #print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
-    #
-    #
-    #
-    # vieux = NFT(35, 40,45, 0.93, "vieux")
-    # vieux2 = NFT(24, 30, 37, 0.4, "jeune")
-    # Valeurs = list(range(20, 100))
-    #
-    # New1 = [vieux.v(i) for i in Valeurs]
-    # New2 = [vieux2.v(i) for i in Valeurs]
-    # vieux = vieux.add(vieux2)
-    #
-    #
-    # New = [vieux.v(i) for i in Valeurs]
-    #
-    # plt.plot(Valeurs, New)
-    # plt.plot(Valeurs, New1)
-    # plt.plot(Valeurs, New2)
-    # plt.show()
-    #
-    # print(vieux.alpha_coupe(0.98))
-    #
-    # vieux = NFT(35, 40, 50, 1, "vieuxNFT")
-    # Valeurs = list(range(20, 100))
-    #
-    # New = [vieux.v(i) for i in Valeurs]
-    # plt.plot(Valeurs, New)
-    # plt.show()
-    #
+    a2 = Table_mult(age1, a,a, a)
+    print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
+
+
+
+    vieux = NFT(35, 40,45, 0.93, "vieux")
+    vieux2 = NFT(24, 30, 37, 0.4, "jeune")
+    Valeurs = list(range(20, 100))
+
+    New1 = [vieux.v(i) for i in Valeurs]
+    New2 = [vieux2.v(i) for i in Valeurs]
+    vieux = vieux + vieux2
+
+
+    New = [vieux.v(i) for i in Valeurs]
+
+    plt.plot(Valeurs, New)
+    plt.plot(Valeurs, New1)
+    plt.plot(Valeurs, New2)
+    plt.show()
+
+    print(vieux.alpha_coupe(0.98))
+
+    vieux = NFT(35, 40, 50, 1, "vieuxNFT")
+    Valeurs = list(range(20, 100))
+
+    New = [vieux.v(i) for i in Valeurs]
+    plt.plot(Valeurs, New)
+    plt.show()
+
     #
