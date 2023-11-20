@@ -226,7 +226,7 @@ class Classe():
 class Table():
     def __init__(self, rules):
         """
-        crée un système d'inférence flou à partir d'un csv, le séparateur est ;
+        crée un système d'inférence flou à partir d'un csv, le séparateur est ,
         """
 
         try :
@@ -284,58 +284,59 @@ class Table_mult():
 
 
 if __name__ == "__main__":
-    from matplotlib import pyplot as plt
-    a = Table("SIFS/SIF 1.csv")
-
-    age = Classe("age")
-    vieux = IFT(50,60,70,80,1,"faible")
-    jeune = IFT(2,5,18,25,1,"moyenne")
-    moyen = IFT(20,25,45, 55, 1, "elevee")
-    age.ajouter(vieux)
-    age.ajouter(jeune)
-    age.ajouter(moyen)
-    print(age.v(5))
-    poly = age.defuz(age.v(5))
-
-    age.possibilite(poly)
-    age1 = Classe("age")
-    vieux1 = IFT(50, 60, 70, 80, 1, "faible")
-    jeune1 = IFT(2, 5, 18, 25, 1, "moyenne")
-    moyen1 = IFT(20, 25, 45, 55, 1, "elevee")
-    age1.ajouter(vieux1)
-    age1.ajouter(jeune1)
-    age1.ajouter(moyen1)
-
-    print(a.inference(age.v(53), age1.v(53)))
-
-    a2 = Table_mult(age1, a,a, a)
-    print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
-
-
-
-    vieux = NFT(35, 40,45, 0.93, "vieux")
-    vieux2 = NFT(24, 30, 37, 0.4, "jeune")
-    Valeurs = list(range(20, 100))
-
-    New1 = [vieux.v(i) for i in Valeurs]
-    New2 = [vieux2.v(i) for i in Valeurs]
-    vieux = vieux + vieux2
-
-
-    New = [vieux.v(i) for i in Valeurs]
-
-    plt.plot(Valeurs, New)
-    plt.plot(Valeurs, New1)
-    plt.plot(Valeurs, New2)
-    plt.show()
-
-    print(vieux.alpha_coupe(0.98))
-
-    vieux = NFT(35, 40, 50, 1, "vieuxNFT")
-    Valeurs = list(range(20, 100))
-
-    New = [vieux.v(i) for i in Valeurs]
-    plt.plot(Valeurs, New)
-    plt.show()
+    pass
+    # from matplotlib import pyplot as plt
+    # a = Table("SIFS/SIF 1.csv")
+    #
+    # age = Classe("age")
+    # vieux = IFT(50,60,70,80,1,"faible")
+    # jeune = IFT(2,5,18,25,1,"moyenne")
+    # moyen = IFT(20,25,45, 55, 1, "elevee")
+    # age.ajouter(vieux)
+    # age.ajouter(jeune)
+    # age.ajouter(moyen)
+    # print(age.v(5))
+    # poly = age.defuz(age.v(5))
+    #
+    # age.possibilite(poly)
+    # age1 = Classe("age")
+    # vieux1 = IFT(50, 60, 70, 80, 1, "faible")
+    # jeune1 = IFT(2, 5, 18, 25, 1, "moyenne")
+    # moyen1 = IFT(20, 25, 45, 55, 1, "elevee")
+    # age1.ajouter(vieux1)
+    # age1.ajouter(jeune1)
+    # age1.ajouter(moyen1)
+    #
+    # print(a.inference(age.v(53), age1.v(53)))
+    #
+    # a2 = Table_mult(age1, a,a, a)
+    # print(age1.v(0), a2.inference(age1.v(0),age.v(53),age1.v(53)))
+    #
+    #
+    #
+    # vieux = NFT(35, 40,45, 0.93, "vieux")
+    # vieux2 = NFT(24, 30, 37, 0.4, "jeune")
+    # Valeurs = list(range(20, 100))
+    #
+    # New1 = [vieux.v(i) for i in Valeurs]
+    # New2 = [vieux2.v(i) for i in Valeurs]
+    # vieux = vieux + vieux2
+    #
+    #
+    # New = [vieux.v(i) for i in Valeurs]
+    #
+    # plt.plot(Valeurs, New)
+    # plt.plot(Valeurs, New1)
+    # plt.plot(Valeurs, New2)
+    # plt.show()
+    #
+    # print(vieux.alpha_coupe(0.98))
+    #
+    # vieux = NFT(35, 40, 50, 1, "vieuxNFT")
+    # Valeurs = list(range(20, 100))
+    #
+    # New = [vieux.v(i) for i in Valeurs]
+    # plt.plot(Valeurs, New)
+    # plt.show()
 
     #
