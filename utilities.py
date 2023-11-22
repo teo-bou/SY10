@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import shapely as sp
-
+from matplotlib import pyplot as plt
 class intervalle():
     """
     Cette classe définit un intervalle net et continu. 
@@ -154,6 +154,15 @@ class NFT(IFT):
     """
     def __init__(self, a, b, c, h, label):
         super().__init__( a, b, b, c, h, label)
+class Classe_classification():
+    def __init__(self, label, *classes):
+        self.label = label
+        self.classes = list(classes)
+
+    def v(self, *valeurs):
+        return {key : value for key, value in zip(self.classes, valeurs)}
+    def __str__(self):
+        return f"{self.label} : {self.classes}"
 
 class Classe():
     def __init__(self, label, range = None):
@@ -237,11 +246,11 @@ class Classe():
         plt.legend([ift for ift in self.valeurs])
         plt.show()
 class Table():
-    def __init__(self, rules):
+    def __init__(self, rules, meaning =""):
         """
         crée un système d'inférence flou à partir d'un csv, le séparateur est ,
         """
-
+        self.meaning = meaning
         try :
             self.rules = pd.read_csv(rules)
         except UnicodeError:
@@ -270,11 +279,15 @@ class Table():
 
         return resultat
 
+    def __str__(self):
+        return f"{self.meaning, self.label} | Classe 1 : {self.lb_classe2}, Classe 2 : {self.lb_classe2}"
+
 
 
 
 class Table_mult():
     def __init__(self, classe,  *tables ):
+        self.tables = tables
         self.lb_classe = classe.classes
         if len(tables)!=len(self.lb_classe):
             raise ValueError(f"Pas assez de tables : {len(tables)} < {len(self.lb_classe)}")
@@ -294,6 +307,9 @@ class Table_mult():
             resultat = {idx : tconorme(resultat[idx], tnorme(result_tmp[idx], degre)) for idx in resultat.keys()}
 
         return resultat
+
+    def __str__(self):
+        return f"{self.label} | Classe diff : {self.lb_classe}, Classe 2 : {self.tables[0].lb_classe1} , Classe 3 : {self.tables[0].lb_classe3}"
 
 
 if __name__ == "__main__":
