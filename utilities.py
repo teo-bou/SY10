@@ -223,6 +223,19 @@ class Classe():
 
     def __str__(self):
         return f"{self.label} : {self.classes}"
+
+    def plot(self, pas = 0.5):
+
+        a = self.range.a
+        b = self.range.b
+        X = np.arange(a,b,pas)
+
+        for ift in self.valeurs:
+            y = [ift.v(x) for x in X]
+            plt.plot(X,y)
+
+        plt.legend([ift for ift in self.valeurs])
+        plt.show()
 class Table():
     def __init__(self, rules):
         """
