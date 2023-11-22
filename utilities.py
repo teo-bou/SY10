@@ -94,12 +94,12 @@ class IFT():
         """
         if x < self.a:
             return 0
-        if x >= self.a and x <= self.b:
+        if x > self.a and x <= self.b:
             return self.h * ((x - self.a) / (self.b - self.a))
-        if x >= self.b and x <= self.c:
+        if x > self.b and x <= self.c:
             return self.h
 
-        if x >= self.c and x <= self.d:
+        if x > self.c and x <= self.d:
             return self.h * ((self.d - x) / (self.d - self.c))
         if x > self.d:
             return 0
@@ -171,16 +171,17 @@ class Classe():
         self.valeurs = []
         self.range = range
 
-    def ajouter(self, ift):
+    def ajouter(self, *ifts):
         """
         ajoute un IFT à la classe
         """
-        self.valeurs.append(ift)
-        self.classes.append(ift.label)
-        if self.range != None:
-            self.range = intervalle(min(ift.a, self.range.a), max(ift.d, self.range.b))
-        else:
-            self.range = intervalle(ift.a, ift.d)
+        for ift in ifts:
+            self.valeurs.append(ift)
+            self.classes.append(ift.label)
+            if self.range != None:
+                self.range = intervalle(min(ift.a, self.range.a), max(ift.d, self.range.b))
+            else:
+                self.range = intervalle(ift.a, ift.d)
 
     def v(self, x):
         """
@@ -252,9 +253,9 @@ class Table():
         """
         self.meaning = meaning
         try :
-            self.rules = pd.read_csv(rules)
+            self.rules = pd.read_csv("./SIFS/"+rules)
         except UnicodeError:
-            self.rules = pd.read_csv(rules, encoding='latin-1')
+            self.rules = pd.read_csv("./SIFS/"+rules, encoding='latin-1')
 
         self.label = self.rules.columns.values[0]
         self.lb_classe1 = self.rules.columns.values[1:]
@@ -280,13 +281,14 @@ class Table():
         return resultat
 
     def __str__(self):
-        return f"{self.meaning, self.label} | Classe 1 : {self.lb_classe2}, Classe 2 : {self.lb_classe2}"
+        return f"{self.meaning, self.label} | Classe 1 : {self.lb_classe1}, Classe 2 : {self.lb_classe2}"
 
 
 
 
 class Table_mult():
-    def __init__(self, classe,  *tables ):
+    def __init__(self, classe,  *tables , label =""):
+        self.label = label
         self.tables = tables
         self.lb_classe = classe.classes
         if len(tables)!=len(self.lb_classe):
@@ -309,7 +311,7 @@ class Table_mult():
         return resultat
 
     def __str__(self):
-        return f"{self.label} | Classe diff : {self.lb_classe}, Classe 2 : {self.tables[0].lb_classe1} , Classe 3 : {self.tables[0].lb_classe3}"
+        return f"{self.label} | Classe diff : {self.lb_classe}, Classe 2 : {self.tables[0].lb_classe1} , Classe 3 : {self.tables[0].lb_classe2}"
 
 
 if __name__ == "__main__":
