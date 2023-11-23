@@ -108,6 +108,17 @@ class IFT():
     def __str__(self):
         return f" {self.label} : ({self.a}, {self.b}, {self.c}, {self.d})"
 
+    def __pow__(self, power, modulo=None):
+        if power!=-1:
+            raise ValueError("Les autres valeurs que -1 ne sont pas supportées")
+        else:
+            return IFT(1/self.a, 1/self.b, 1/self.c, 1/self.d, self.h, self.label)
+
+    def __truediv__(self, other):
+        return self * other ** (-1)
+
+
+
     def __mul__(self, other):
         """
         cette classe sert à multiplier l'intervalle par un scalaire
