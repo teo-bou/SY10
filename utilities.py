@@ -108,15 +108,25 @@ class IFT():
     def __str__(self):
         return f" {self.label} : ({self.a}, {self.b}, {self.c}, {self.d})"
 
-    def mul(self, alpha):
+    def __mul__(self, other):
         """
         cette classe sert à multiplier l'intervalle par un scalaire
         """
-        a = alpha * self.a
-        b = alpha * self.b
-        c = alpha * self.c
-        d = alpha * self.d
-        return IFT(a, b, c, d, self.h, self.label)
+        if isinstance(other, IFT):
+            ift = other
+            if self.h > ift.h:
+                ift1 = self.troncature(ift.h)
+            else:
+                ift1 = self
+                ift = ift.troncature(self.h)
+            return IFT(ift1.a * ift.a, ift1.b*ift.b, ift1.c*ift.c, ift1.d*ift.d, ift1.h, ift1.label)
+        else:
+            alpha = other
+            a = alpha * self.a
+            b = alpha * self.b
+            c = alpha * self.c
+            d = alpha * self.d
+            return IFT(a, b, c, d, self.h, self.label)
 
     def __add__(self, ift):
         """
@@ -128,6 +138,7 @@ class IFT():
             ift1 = self.troncature(ift.h)
         else:
             ift1 = self
+            ift = ift.troncature(self.h)
         return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
 
     def troncature(self, h):

@@ -7,6 +7,11 @@ class Village():
         self.ressenti = ressenti
         self.infrastructure = infrastructure
 
+
+
+    def eval_besoin(self):
+        self.besoin = self.nb_habitants*3600
+
 class Source():
     def __init__(self, x, y, couleur, debit, odeur):
         self.x = x
