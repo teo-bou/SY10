@@ -1,4 +1,5 @@
 from flou_import import *
+from Classes import *
 class Village():
     def __init__(self, x, y, nb_habitants, ressenti, infrastructure):
         self.x = x
@@ -35,8 +36,8 @@ class Source():
         self.x = x
         self.y = y
         self.couleur = couleur
-        self.odeur = odeur
         self.debit = debit
+        self.odeur = odeur
 
 
 def CAF2(village, source):

@@ -115,7 +115,7 @@ class IFT():
             return IFT(1/self.d, 1/self.c, 1/self.b, 1/self.a, self.h, self.label)
 
     def __truediv__(self, other):
-        return self * other ** (-1)
+        return self * (other ** (-1))
 
 
 
@@ -165,6 +165,7 @@ class IFT():
 
     def poly(self):
         """Renvoie le polygone de l'IFT"""
+        print(sp.Polygon(list(set([(self.a, 0), (self.b, self.h), (self.c, self.h), (self.d, 0)]))))
         return sp.Polygon(list(set([(self.a, 0), (self.b, self.h), (self.c, self.h), (self.d, 0)])))
 
 
@@ -229,6 +230,7 @@ class Classe():
         for ift in self.valeurs:
             shape_IFT = ift.poly()
             if shape_IFT.intersects(poly):
+                print(shape_IFT, poly)
                 shape_IFT = poly.intersection(shape_IFT)
                 resultat[ift.label] = max(shape_IFT.exterior.coords.xy[1])
         return resultat
