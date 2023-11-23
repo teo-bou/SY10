@@ -2,12 +2,13 @@ import pandas as pd
 import numpy as np
 import shapely as sp
 from matplotlib import pyplot as plt
+
+
 class intervalle():
     """
     Cette classe définit un intervalle net et continu. 
     (car il ne prend en compte que 2 valeurs)
     """
-
 
     def __init__(self, a=None, b=None):
         self.a = a
@@ -18,50 +19,49 @@ class intervalle():
             return "Intervalle vide"
         else:
             return f"[{self.a},{self.b}]"
-    
-    
-    def __add__(self, other) :
+
+    def __add__(self, other):
         """
         addition de 2 intervalles
         """
         return intervalle(self.a + other.a, self.b + other.b)
 
-    def __neg__(self) :
+    def __neg__(self):
         """
         donne l'opposé d'un intervalle
         -A = A.__neg__()
         """
         return intervalle(-self.b, -self.a)
 
-    def __sub__(self, other) :
+    def __sub__(self, other):
         return self + (-other)
 
-    def __mul__(self, other) :
-        return intervalle(max([self.a * other.a, self.a * other.b, self.b * other.a, self.b * other.b]), 
-                              min([self.a * other.a, self.a * other.b, self.b * other.a, self.b * other.b]))
+    def __mul__(self, other):
+        return intervalle(max([self.a * other.a, self.a * other.b, self.b * other.a, self.b * other.b]),
+                          min([self.a * other.a, self.a * other.b, self.b * other.a, self.b * other.b]))
 
-    def __pow__(self, value) :
+    def __pow__(self, value):
         """
         sert uniquement à donner l'inverse d'un intervalle : A^1
         peut s'utiliser ainsi : 
         inverse = A ** -1
         """
-        if value != -1 : 
+        if value != -1:
             raise ValueError("Only -1 is supported")
-        if self.a == 0 or self.b == 0 : 
+        if self.a == 0 or self.b == 0:
             raise ValueError("Only non-zero intervals are supported")
-        if self.a <= 0 <= self.b : 
+        if self.a <= 0 <= self.b:
             raise ValueError("Only  strictly positive or strictly négative intervals are supported by this operation.")
-        return intervalle(1/self.b, 1/self.a)
+        return intervalle(1 / self.b, 1 / self.a)
 
-    def __div__(self, other) :
+    def __div__(self, other):
         """
         Divisions de deux intervalles : A / B
         """
-        return self * (other**-1)
+        return self * (other ** -1)
 
-    def union(self, other) :
-        if self.b < other.a or other.b < self.a :
+    def union(self, other):
+        if self.b < other.a or other.b < self.a:
             raise ValueError("The intervals must be joined")
 
         return intervalle(min(self.a, other.a), max(self.b, other.b))
@@ -71,6 +71,7 @@ class IFT():
     """
     Classe qui définit un intervalle flou trapézoidal 
     """
+
     def __init__(self, a, b, c, d, h, label):
 
         self.a = a
@@ -115,7 +116,7 @@ class IFT():
         b = alpha * self.b
         c = alpha * self.c
         d = alpha * self.d
-        return IFT(a,b,c,d,self.h, self.label)
+        return IFT(a, b, c, d, self.h, self.label)
 
     def __add__(self, ift):
         """
@@ -125,10 +126,9 @@ class IFT():
         """
         if self.h > ift.h:
             ift1 = self.troncature(ift.h)
-        else : 
+        else:
             ift1 = self
         return IFT(ift1.a + ift.a, ift1.b + ift.b, ift1.c + ift.c, ift1.d + ift.d, ift.h, self.label)
-
 
     def troncature(self, h):
         """Fait une troncature de l'ITF en h"""
@@ -137,35 +137,38 @@ class IFT():
         elif h == self.h:
             return self
         else:
-            b = h*(self.b-self.a)/self.h+self.a
-            c = - h*(self.d - self.c)/self.h +self.d
-            return IFT(self.a,b,c,self.d, h,self.label)
+            b = h * (self.b - self.a) / self.h + self.a
+            c = - h * (self.d - self.c) / self.h + self.d
+            return IFT(self.a, b, c, self.d, h, self.label)
 
     def poly(self):
         """Renvoie le polygone de l'IFT"""
-        return sp.Polygon(list(set([(self.a,0),(self.b,self.h),(self.c,self.h),(self.d,0)])))
-
-
+        return sp.Polygon(list(set([(self.a, 0), (self.b, self.h), (self.c, self.h), (self.d, 0)])))
 
 
 class NFT(IFT):
     """
     classe qui définit un nombre flou triangulaire
     """
+
     def __init__(self, a, b, c, h, label):
-        super().__init__( a, b, b, c, h, label)
+        super().__init__(a, b, b, c, h, label)
+
+
 class Classe_classification():
     def __init__(self, label, *classes):
         self.label = label
         self.classes = list(classes)
 
     def v(self, *valeurs):
-        return {key : value for key, value in zip(self.classes, valeurs)}
+        return {key: value for key, value in zip(self.classes, valeurs)}
+
     def __str__(self):
         return f"{self.label} : {self.classes}"
 
+
 class Classe():
-    def __init__(self, label, range = None):
+    def __init__(self, label, range=None):
         self.label = label
         self.classes = []
         self.valeurs = []
@@ -187,6 +190,8 @@ class Classe():
         """
         Renvoie la valeur d'appartenance de x à chaque IFT de la classe dans un dictionnaire.
         """
+        x = min(x, self.range.b)
+        x = max(x, self.range.a)
         appartenances = {}
         for ift in self.valeurs:
             appartenances[ift.label] = ift.v(x)
@@ -211,8 +216,10 @@ class Classe():
         defuzzification à partir du dictionnaire d'appartenance au classes.
         retourne un polygone  résultat de l'union des troncatures et du rectangle qui s'étend de la classe activée la plus petite à la classe activée la plus grande
         """
-        minimum, maximum = min([ift.a for ift in self.valeurs if resultat[ift.label]>0]), max([ift.d for ift in self.valeurs if resultat[ift.label]>0])
-        poly = sp.Polygon([(minimum,-1),(minimum, 0), (maximum, 0), (maximum, -1) ])  # Un rectangle qui s'étend de la classe activée la plus petite à la classe activée la plus grande
+        minimum, maximum = min([ift.a for ift in self.valeurs if resultat[ift.label] > 0]), max(
+            [ift.d for ift in self.valeurs if resultat[ift.label] > 0])
+        poly = sp.Polygon([(minimum, -1), (minimum, 0), (maximum, 0), (maximum,
+                                                                       -1)])  # Un rectangle qui s'étend de la classe activée la plus petite à la classe activée la plus grande
         for ift in self.valeurs:
             degree = resultat[ift.label]
             if degree > 0:
@@ -220,10 +227,11 @@ class Classe():
 
                 minimum = min(minimum, ift.a)
                 maximum = max(maximum, ift.d)
-                poly = sp.unary_union([poly,sp.make_valid(sp.Polygon(list(set([(ift.a,0),(ift.b,ift.h),(ift.c,ift.h),(ift.d,0)]))))]) 
+                poly = sp.unary_union([poly, sp.make_valid(
+                    sp.Polygon(list(set([(ift.a, 0), (ift.b, ift.h), (ift.c, ift.h), (ift.d, 0)]))))])
 
-        return poly # Le polygone est l'ensemble des troncatures de toute les classe activée. Son barycentre est le résulta de la defuzzification
-    
+        return poly  # Le polygone est l'ensemble des troncatures de toute les classe activée. Son barycentre est le résulta de la defuzzification
+
     def eval(self, resultat):
         """
         donne la valeur finale déffuzifié à partir du dictionnaire d'appartenance au IFTs
@@ -234,44 +242,48 @@ class Classe():
     def __str__(self):
         return f"{self.label} : {self.classes}"
 
-    def plot(self, pas = 0.5):
-
+    def plot(self, pas=0):
         a = self.range.a
         b = self.range.b
-        X = np.arange(a,b,pas)
+        if pas == 0:
+            pas = (b - a) / 1000
+            print(pas)
+        X = np.arange(a, b, pas)
 
         for ift in self.valeurs:
             y = [ift.v(x) for x in X]
-            plt.plot(X,y)
+            plt.plot(X, y)
 
         plt.legend([ift for ift in self.valeurs])
         plt.show()
+
+
 class Table():
-    def __init__(self, rules, meaning =""):
+    def __init__(self, rules, meaning=""):
         """
         crée un système d'inférence flou à partir d'un csv, le séparateur est ,
         """
         self.meaning = meaning
-        try :
-            self.rules = pd.read_csv("./SIFS/"+rules)
+        try:
+            self.rules = pd.read_csv("./SIFS/" + rules)
         except UnicodeError:
-            self.rules = pd.read_csv("./SIFS/"+rules, encoding='latin-1')
+            self.rules = pd.read_csv("./SIFS/" + rules, encoding='latin-1')
 
         self.label = self.rules.columns.values[0]
         self.lb_classe1 = self.rules.columns.values[1:]
         self.lb_classe2 = list(self.rules[self.label])
         self.rules.set_index(self.label, inplace=True, drop=True)
-        self.lb_result = [ i  for i in np.unique(self.rules) if i not in self.lb_classe2]
+        self.lb_result = [i for i in np.unique(self.rules) if i not in self.lb_classe2]
 
-    def inference(self,val1 : dict, val2 : dict, tconorme = max, tnorme = min):
+    def inference(self, val1: dict, val2: dict, tconorme=max, tnorme=min):
 
         print(list(val1.keys()))
         if not (list(val1.keys()) == self.lb_classe1).all():
             raise ValueError(f" {val1.keys()} ne matche pas les valeurs {self.lb_classe1}")
         if not (list(val2.keys()) == self.lb_classe2):
             raise ValueError(f"{val2.keys()} ne matche pas les valeurs{self.lb_classe2}")
-        resultat = {key : 0 for key in self.lb_result}
-        for classe1 in [ key for key in val1.keys() if val1[key]!=0]:
+        resultat = {key: 0 for key in self.lb_result}
+        for classe1 in [key for key in val1.keys() if val1[key] != 0]:
             ligne = self.rules[classe1]
             for classe2 in [key for key in val2.keys() if val2[key] != 0]:
                 result = ligne.loc[classe2]
@@ -284,29 +296,27 @@ class Table():
         return f"{self.meaning, self.label} | Classe 1 : {self.lb_classe1}, Classe 2 : {self.lb_classe2}"
 
 
-
-
 class Table_mult():
-    def __init__(self, classe,  *tables , label =""):
+    def __init__(self, classe, *tables, label=""):
         self.label = label
         self.tables = tables
         self.lb_classe = classe.classes
-        if len(tables)!=len(self.lb_classe):
+        if len(tables) != len(self.lb_classe):
             raise ValueError(f"Pas assez de tables : {len(tables)} < {len(self.lb_classe)}")
-        self.table = {key  : table for key, table in zip(self.lb_classe, tables)}
+        self.table = {key: table for key, table in zip(self.lb_classe, tables)}
         self.lb_result = []
         for item in tables:
-            self.lb_result+=item.lb_result
+            self.lb_result += item.lb_result
         self.lb_result = list(set(self.lb_result))
-    def inference(self, val_classe, val1, val2, tconorme = max, tnorme = min):
-        resultat = {key : 0 for key in self.lb_result}
-        for key in val_classe.keys():
 
+    def inference(self, val_classe, val1, val2, tconorme=max, tnorme=min):
+        resultat = {key: 0 for key in self.lb_result}
+        for key in val_classe.keys():
             degre = val_classe[key]
 
             table = self.table[key]
             result_tmp = table.inference(val1, val2, tconorme, tnorme)
-            resultat = {idx : tconorme(resultat[idx], tnorme(result_tmp[idx], degre)) for idx in resultat.keys()}
+            resultat = {idx: tconorme(resultat[idx], tnorme(result_tmp[idx], degre)) for idx in resultat.keys()}
 
         return resultat
 
