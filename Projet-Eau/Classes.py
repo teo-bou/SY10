@@ -25,7 +25,7 @@ alt_cum_faible = IFT(0, 0, 5000, 7000, 1, "faible")
 alt_cum_moyenne = IFT(5000, 7000, 10000, 15000, 1, "moyenne")
 alt_cum_elevee = IFT(10000, 15000, 20000, 20000, 1, "elevee")
 altitude_cumulee.ajouter(alt_cum_faible,alt_cum_moyenne, alt_cum_elevee)
-altitude_cumulee.plot()
+#altitude_cumulee.plot()
 
 somme_sources_besoins = Classe("proportion entre les sources et les besoins")
 src_besoin_trop_peu = IFT(0, 0, 0.4, 0.7, 1, "beaucoup trop peu" )

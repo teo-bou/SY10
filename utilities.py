@@ -112,7 +112,7 @@ class IFT():
         if power!=-1:
             raise ValueError("Les autres valeurs que -1 ne sont pas supportées")
         else:
-            return IFT(1/self.a, 1/self.b, 1/self.c, 1/self.d, self.h, self.label)
+            return IFT(1/self.d, 1/self.c, 1/self.b, 1/self.a, self.h, self.label)
 
     def __truediv__(self, other):
         return self * other ** (-1)
