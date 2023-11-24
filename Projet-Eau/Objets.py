@@ -1,5 +1,7 @@
 from flou_import import *
 from Classes import *
+from Rules import *
+import math
 class Village():
     def __init__(self, x, y, nb_habitants, ressenti, infrastructure):
         self.x = x
@@ -26,8 +28,15 @@ class Village():
         resultat.label = "besoin"
         return resultat
 
+
+    def distance(self, point):
+        dist = math.dist((self.x, self.y),(point.x, point.y))
+        dist = map_range(dist, 0, 700 ,0, 1800)
+        print(dist)
+        return dist
+
     def __str__(self):
-        return f" nb hab ≈{(self.nb_habitants.b + self.nb_habitants.c)/2} | {self.ressenti} {self.infrastructure}| besoin : {self.besoin} "
+        return f" nb hab ≈ {(self.nb_habitants.b + self.nb_habitants.c)/2} | {self.ressenti} {self.infrastructure}| besoin : {self.besoin} "
 
 
 
@@ -45,16 +54,10 @@ def CAF2(village, source):
     debit = source.debit
     ift = debit*86400*0.6/besoin # on calcule 0.4 de perte
     ift.label = "prop debit/besoin"
-    print(ift)
-    print("--")
-    print(prop_debit_besoin.possibilite(ift.poly()))
     return prop_debit_besoin.possibilite(ift.poly())
 
 
-ZZ = Village(23,36,NFT(10000,20000,30000,1,'hab'),ressenti.v(0.2,1),{"hopital":2, "ecole":3,"gouvernement":1})
-print("Le village ZZ",ZZ)
-print(ZZ.besoin)
-
-S = Source(20,30,couleur_eau.v(0.2,1),NFT(1,2,3,1,'debit')*30, odeur_eau.v(0,0,0.2))
-
-CAF2(ZZ, S)
+def calculer_score(village, source):
+    proportion_debit_besoin = CAF2(village, source)
+    qualite_eau = SIF5.inference(source.couleur, source.odeur)
+    score_eau = SIF7.inference(proportion_debit_besoin, qualite_eau)

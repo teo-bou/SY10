@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import shapely as sp
 from matplotlib import pyplot as plt
-
+def map_range(x, in_min, in_max, out_min, out_max):
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
 class intervalle():
     """
@@ -317,9 +318,9 @@ class Table():
     def inference(self, val1: dict, val2: dict, tconorme=max, tnorme=min):
 
         print(list(val1.keys()))
-        if not (list(val1.keys()) == self.lb_classe1).all():
+        if not set(list(val1.keys())) == set(self.lb_classe1):
             raise ValueError(f" {val1.keys()} ne matche pas les valeurs {self.lb_classe1}")
-        if not (list(val2.keys()) == self.lb_classe2):
+        if not set(list(val2.keys())) == set(self.lb_classe2):
             raise ValueError(f"{val2.keys()} ne matche pas les valeurs{self.lb_classe2}")
         resultat = {key: 0 for key in self.lb_result}
         for classe1 in [key for key in val1.keys() if val1[key] != 0]:
