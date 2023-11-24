@@ -112,7 +112,10 @@ class IFT():
         if power!=-1:
             raise ValueError("Les autres valeurs que -1 ne sont pas supportées")
         else:
-            return IFT(1/self.d, 1/self.c, 1/self.b, 1/self.a, self.h, self.label)
+            if self.a >= 0:
+                return IFT(1/self.d, 1/self.c, 1/self.b, 1/self.a, self.h, self.label)
+            else:
+                raise ValueError("0 dans l'IFT", self)
 
     def __truediv__(self, other):
         return self * (other ** (-1))
@@ -165,8 +168,12 @@ class IFT():
 
     def poly(self):
         """Renvoie le polygone de l'IFT"""
-        print(sp.Polygon(list(set([(self.a, 0), (self.b, self.h), (self.c, self.h), (self.d, 0)]))))
-        return sp.Polygon(list(set([(self.a, 0), (self.b, self.h), (self.c, self.h), (self.d, 0)])))
+
+        points=list(set([(self.a, 0), (self.b, self.h), (self.c, self.h), (self.d, 0)]))
+        poly = sp.make_valid(sp.Polygon(points))
+        if isinstance(poly, sp.MultiPolygon):
+            poly = poly.geoms[0]
+        return poly
 
 
 class NFT(IFT):
@@ -226,13 +233,22 @@ class Classe():
         """
        Permet d'évaluer une valeur floue (avec sa forme + calcul du degré de possibilité)
         """
-        resultat = {}
+        resultat = {ift.label:0 for ift in self.valeurs}
+        h_poly = max([coord[1] for coord in poly.exterior.coords])
+        points_noyau_poly_x = [coordo[0] for coordo in poly.exterior.coords if coordo[1] == h_poly]
+        if max(points_noyau_poly_x)<self.range.a:
+            resultat = self.v(self.range.a)
+            resultat = {key : min(valeur, h_poly) for key, valeur in resultat.items()}
+        elif min(points_noyau_poly_x)>self.range.b:
+            resultat = self.v(self.range.b)
+            resultat = {key : min(valeur, h_poly) for key, valeur in resultat.items()}
+
         for ift in self.valeurs:
             shape_IFT = ift.poly()
             if shape_IFT.intersects(poly):
-                print(shape_IFT, poly)
                 shape_IFT = poly.intersection(shape_IFT)
-                resultat[ift.label] = max(shape_IFT.exterior.coords.xy[1])
+                resultat[ift.label] = max(max(shape_IFT.exterior.coords.xy[1]), resultat[ift.label])
+
         return resultat
 
     def defuz(self, resultat):
@@ -271,7 +287,6 @@ class Classe():
         b = self.range.b
         if pas == 0:
             pas = (b - a) / 1000
-            print(pas)
         X = np.arange(a, b, pas)
 
         for ift in self.valeurs:
@@ -350,8 +365,9 @@ class Table_mult():
 
 if __name__ == "__main__":
     pass
+
     # from matplotlib import pyplot as plt
-    # a = Table("SIFS/SIF 1.csv")
+    #
     #
     # age = Classe("age")
     # vieux = IFT(50,60,70,80,1,"faible")
@@ -360,7 +376,7 @@ if __name__ == "__main__":
     # age.ajouter(vieux)
     # age.ajouter(jeune)
     # age.ajouter(moyen)
-    # print(age.v(5))
+    # print(age.v(53))
     # poly = age.defuz(age.v(5))
     #
     # age.possibilite(poly)

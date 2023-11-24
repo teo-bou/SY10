@@ -43,14 +43,15 @@ class Source():
 def CAF2(village, source):
     besoin = village.besoin
     debit = source.debit
-    ift = debit*86400/besoin
+    ift = debit*86400*0.6/besoin # on calcule 0.4 de perte
     ift.label = "prop debit/besoin"
     print(ift)
+    print("--")
     print(prop_debit_besoin.possibilite(ift.poly()))
     return prop_debit_besoin.possibilite(ift.poly())
 
 
-ZZ = Village(23,36,NFT(1,2,3,1,'hab'),ressenti.v(0.2,1),{})
+ZZ = Village(23,36,NFT(10000,20000,30000,1,'hab'),ressenti.v(0.2,1),{"hopital":2, "ecole":3,"gouvernement":1})
 print("Le village ZZ",ZZ)
 print(ZZ.besoin)
 
