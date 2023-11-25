@@ -4,6 +4,7 @@ from Rules import *
 from Objets import *
 
 Score = {}
+carte = Carte("test")
 
 
 #
@@ -17,10 +18,12 @@ print("Le village ZZ",ZZ)
 print(ZZ.besoin)
 
 S = Source(20,30,couleur_eau.v(0.2,1),NFT(1,2,3,1,'debit')*30, odeur_eau.v(0,0,0.2))
-print(ZZ.distance(S))
+print(carte.distance(S, ZZ))
+carte.alt(ZZ)
 result = CAF2(ZZ, S)
 print()
 result1 = SIF5.inference(S.couleur, S.odeur)
 print(result1)
 score = SIF7.inference(result, result1)
 print(score)
+print(carte)
