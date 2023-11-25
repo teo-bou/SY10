@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-#### Mettre l'image en gris et stocker les valeurs des pixels dans une liste
+######## Mettre l'image en gris et stocker les valeurs des pixels dans une liste
 
 image_elevation = cv2.imread('C:\\Users\\ellen\\Documents\\UTC\\TC03\\SY10\\projet_sy10\\SY10\\carte_ele_color.png')
 
