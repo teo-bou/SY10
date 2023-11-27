@@ -73,7 +73,22 @@ class Carte():
         dist = math.dist((x1, y1), (x2, y2))
         dist = map_range(dist, 0, math.sqrt((self.l)**2 + (self.L)**2), 0, difference_distance.range.b)
         return dist
+    def line_alt(self, obj1, obj2, pas = 1):
+        if isinstance(obj1, tuple):
+            x1,y1 = obj1
+        else:
+            x1,y1 = obj1.x,obj1.y
+        if isinstance(obj2, tuple):
+            x2,y2 = obj2
+        else:
+            x2,y2 = obj2.x,obj2.y
 
+
+        ligne = line(x1, y1, x2, y2)
+        ligne = [self.alt(ligne[i]) for i in range(0,len(ligne), pas)]
+        print(ligne)
+        plt.plot(list(range(len(ligne))),ligne)
+        plt.show()
     def alt(self, objet):
         if isinstance(objet, tuple):
             x,y = objet
