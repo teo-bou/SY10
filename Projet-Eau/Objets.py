@@ -2,6 +2,43 @@ from flou_import import *
 from Classes import *
 from Rules import *
 import math
+import cv2
+def line(x0, y0, x1, y1):
+    steep = abs(y1 - y0) > abs(x1 - x0)
+    if steep:
+        x0, y0 = y0, x0
+        x1, y1 = y1, x1
+
+    switched = False
+    if x0 > x1:
+        switched = True
+        x0, x1 = x1, x0
+        y0, y1 = y1, y0
+
+    if y0 < y1:
+        ystep = 1
+    else:
+        ystep = -1
+
+    deltax = x1 - x0
+    deltay = abs(y1 - y0)
+    error = -deltax / 2
+    y = y0
+
+    line = []
+    for x in range(x0, x1 + 1):
+        if steep:
+            line.append((y,x))
+        else:
+            line.append((x,y))
+
+        error = error + deltay
+        if error > 0:
+            y = y + ystep
+            error = error - deltax
+    if switched:
+        line.reverse()
+    return line
 class Carte():
     def __init__(self, carte, l = 500, L = 500):
         self.carte = self.lire_carte(carte)
@@ -14,35 +51,47 @@ class Carte():
 
 
     def __str__(self):
+        cv2.imshow('Carte', self.carte)
+        cv2.waitKey(0)
         return f"Carte allant de x=[0;{self.x_max}], y = [0; {self.y_max}], alt = [{self.alt_min}; {self.alt_max}]"
     def lire_carte(self, carte):
-
-        carte_matrice = []# Fonction open-cv à implémenter pour toi, Ellen
-
-        return carte_matrice
+        image_elevation = cv2.imread("./cartes/"+carte)
+        image_gray = cv2.cvtColor(image_elevation, cv2.COLOR_BGR2GRAY)
+        self.l, self.L = image_gray.shape[0], image_gray.shape[1]
+        return image_gray
 
 
     def distance(self, a, b):
-        dist = math.dist((a.x, a.y), (b.x, b.y))
+        if isinstance(a, tuple):
+            x1, y1 = a
+        else:
+            x1, y1 = a.x, a.y
+        if isinstance(b, tuple):
+            x2, y2 = b
+        else:
+            x2, y2 = b.x, b.y
+        dist = math.dist((x1, y1), (x2, y2))
         dist = map_range(dist, 0, math.sqrt((self.l)**2 + (self.L)**2), 0, difference_distance.range.b)
-        print(dist)
         return dist
 
-    def alt(self, objet=None, x=None, y=None):
-        if objet == None and (x == None or y == None):
-            raise ValueError("Entrez des valeurs pour le point")
-        elif (x == None or y == None):
-            x, y = objet.x, objet.y
+    def alt(self, objet):
+        if isinstance(objet, tuple):
+            x,y = objet
+        else:
+            x,y = objet.x,objet.y
         x,y = int(map_range(x, 0, self.x_max, 0, self.l)), int(map_range(y, 0, self.y_max, 0, self.L))
-        print(x,y)
-        alt = 0 #mettre la fonction open-cv qui calcule avec x et y l'altitude
+        alt = self.carte[x][y]
         map_range(alt, 0, 255, self.alt_min, self.alt_max)
         return alt
-    def alt_cum(self):
-        pass
+    def alt_cum(self, a, b):
+        ligne = line(a.x, a.y, b.x, b.y)
+        alt_cum = sum([math.dist(self.alt(ligne[i-1]), self.alt(ligne[i])) for i in range(1, len(ligne)) ])
+        return alt_cum
 
     def dist_alt(self, a, b):
         return math.dist(self.alt(a), self.alt(b))
+
+
 class Village():
     def __init__(self, x, y, nb_habitants, ressenti, infrastructure):
         self.x = x
@@ -106,3 +155,9 @@ def prop_sources_besoins(villages, sources):
     ift.label = "prop debit/besoin total"
     return prop_debit_besoin.possibilite(ift.poly())
 
+def altitude_cumulee_totale(carte, villages, sources):
+    altitude_cumul = 0
+    for village in villages:
+        for source in sources:
+            altitude_cumul+=carte.alt_cum(village, source)
+    return altitude_cumul

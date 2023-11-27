@@ -6,10 +6,7 @@ SIF1_2 = Table("SIF 1.2.csv")
 
 SIF1 = Table_mult(type_terrain, SIF1_1, SIF1_2, label="conditions geologiques")
 
-print(SIF1)
-val1 = {"faible":0, "moyenne":0.4 , "elevee":0 }
-val2 = {"faible":0.8, "moyenne": 0.3, "elevee":0 }
-print(SIF1.inference(type_terrain.v(0.2, 0.5), val1, val2 ))
+
 
 SIF2_1 = Table("SIF 2.1.csv")
 SIF2_2 = Table("SIF 2.2.csv")
