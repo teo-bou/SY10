@@ -19,7 +19,7 @@ print(ZZ.besoin)
 
 S = Source(20,30,couleur_eau.v(0.2,1),NFT(1,2,3,1,'debit')*30, odeur_eau.v(0,0,0.2))
 print("dist", carte.distance((10,1), ZZ))
-carte.alt(ZZ)
+print("altc",carte.alt(ZZ))
 result = CAF2(ZZ, S)
 print()
 result1 = SIF5.inference(S.couleur, S.odeur)
