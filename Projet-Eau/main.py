@@ -13,7 +13,7 @@ carte = Carte("test_elevation.png")
 
 
 
-ZZ = Village(223,396,NFT(10000,20000,30000,1,'hab'),ressenti.v(0.2,1),{"hopital":2, "ecole":3,"gouvernement":1})
+ZZ = Village(1000,1000,NFT(10000,20000,30000,1,'hab'),ressenti.v(0.2,1),{"hopital":2, "ecole":3,"gouvernement":1})
 print("Le village ZZ",ZZ)
 print(ZZ.besoin)
 
