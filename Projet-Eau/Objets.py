@@ -3,6 +3,10 @@ from Classes import *
 from Rules import *
 import math
 import cv2
+class Point():
+    def __init__(self, point):
+        self.x = point[0]
+        self.y = point[1]
 def line(x0, y0, x1, y1):
     steep = abs(y1 - y0) > abs(x1 - x0)
     if steep:
@@ -106,7 +110,7 @@ class Carte():
         return alt
     def alt_cum(self, a, b):
         ligne = line(a.x, a.y, b.x, b.y)
-        alt_cum = sum([math.dist(self.alt(ligne[i-1]), self.alt(ligne[i])) for i in range(1, len(ligne)) ])
+        alt_cum = sum([abs(self.alt(ligne[i-1])- self.alt(ligne[i])) for i in range(1, len(ligne)) ])
         return alt_cum
 
     def dist_alt(self, a, b):
