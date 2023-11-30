@@ -190,7 +190,7 @@ def calculer_score(carte, village, source):
     diff_dist = difference_distance.v(carte.distance(village, source))
     score_geo = SIF6.inference( diff_dist, difficulte_geo)
     score = SIF8.inference(score_geo, score_eau)
-    score_defuzz = score_village.eval(score)
+    score_defuzz = score_village_src.eval(score)
     return (score_defuzz, score)
 
 

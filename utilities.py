@@ -278,7 +278,7 @@ class Classe():
         donne la valeur finale déffuzifié à partir du dictionnaire d'appartenance au IFTs
         """
         poly = self.defuz(resultat)
-        return self.v(poly.centroid.x)
+        return poly.centroid.x
 
     def __str__(self):
         return f"{self.label} : {self.classes}"

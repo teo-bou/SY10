@@ -13,7 +13,9 @@ def scores_villages_sources(carte, liste_village, liste_sources):
     for village in liste_village:
         for source in liste_sources:
             score = calculer_score(carte, village, source)
-            dico[(village, source)] = score
+            print(score)
+            print()
+            dico[((village.x, village.y), (source.x, source.y))] = score[0]
     return dico
 
 
