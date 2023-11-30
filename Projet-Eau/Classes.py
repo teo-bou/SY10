@@ -41,3 +41,5 @@ prop_satisf = IFT(0.8, 1, 1.2, 3, 1, "satisfaisant")
 prop_trop_elevee = IFT(1.2, 3, 4, 4,1,  "trop elevee")
 prop_debit_besoin.ajouter(prop_trop_faible, prop_satisf, prop_trop_elevee)
 #prop_debit_besoin.plot()
+
+score_village_src = Classe("Score Village/Source")

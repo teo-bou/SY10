@@ -1,8 +1,12 @@
 from typing import List, Tuple
 from heapq import heappop, heappush
+
+import cv2
+
 import main
 from Objets import *
 import warnings
+import time
 
 #suppress warnings
 warnings.filterwarnings('ignore')
@@ -56,7 +60,7 @@ class Node:
         return self.f < other.f
 
 
-def calculate_heuristic(map, current: Tuple[int, int], goal: Tuple[int, int]) -> float:
+def calculate_heuristic(map, neighbour : Tuple[int,int], current: Tuple[int, int], goal: Tuple[int, int]) -> float:
     """
     Calculates the heuristic value (estimated cost) between two nodes.
 
@@ -72,8 +76,8 @@ def calculate_heuristic(map, current: Tuple[int, int], goal: Tuple[int, int]) ->
     - float:
         The estimated cost between the current and goal nodes.
     """
-
-    return abs(current[0] - goal[0]) + abs(current[1] - goal[1]) + 15*map.alt_cum(Point(current), Point(goal))
+    
+    return   abs(current[0] - goal[0]) + abs(current[1] - goal[1]) + 2* abs(map.alt(Point(neighbour))- map.alt(Point(current)))
 
 
 def get_neighbors(current: Tuple[int, int], map_size: Tuple[int, int]) -> List[Tuple[int, int]]:
@@ -109,23 +113,6 @@ def get_neighbors(current: Tuple[int, int], map_size: Tuple[int, int]) -> List[T
 
 def search_map_with_portals(map: List[List[int]], start: Tuple[int, int], goal: Tuple[int, int]) -> List[
     Tuple[int, int]]:
-    """
-    Searches the map using the A* algorithm with support for portals.
-
-    Parameters:
-    - map: List[List[int]]
-        The map represented as a 2D grid of integers.
-        0 represents an obstacle, and any other positive integer represents a portal.
-    - start: Tuple[int, int]
-        The (x, y) coordinates of the start node.
-    - goal: Tuple[int, int]
-        The (x, y) coordinates of the goal node.
-
-    Returns:
-    - List[Tuple[int, int]]:
-        A list of (x, y) coordinates representing the path from the start to the goal node.
-        If no path is found, an empty list is returned.
-    """
 
     # Check if the start or goal nodes are out of bounds
     if start[0] < 0 or start[0] >= map.l or start[1] < 0 or start[1] >= map.L:
@@ -143,12 +130,12 @@ def search_map_with_portals(map: List[List[int]], start: Tuple[int, int], goal: 
     goal_node = Node(goal)
 
     # Calculate the heuristic value for the start node
-    start_node.h = calculate_heuristic(map, start, goal)
+    #start_node.h = calculate_heuristic(map,start, start, goal)
     start_node.f = start_node.h
 
     # Add the start node to the open list
     heappush(open_list, start_node)
-
+    path1 = []
     # Start the A* algorithm
     while open_list:
         # Get the node with the lowest f value from the open list
@@ -165,7 +152,12 @@ def search_map_with_portals(map: List[List[int]], start: Tuple[int, int], goal: 
 
         # Add the current node to the closed list
         closed_list.add(current_node.position)
-
+        path1.append(current_node.position)
+        x = [point[0] for point in path1]
+        y = [point[1] for point in path1]
+        # plt.plot(x,y)
+        # if len(path1)%100 == 55:
+        #     plt.show()
         # Get the neighboring nodes of the current node
         neighbors = get_neighbors(current_node.position, (map.l, map.L))
 
@@ -181,7 +173,7 @@ def search_map_with_portals(map: List[List[int]], start: Tuple[int, int], goal: 
             neighbor_node.g = current_node.g + 1
 
             # Calculate the heuristic value for the neighbor node
-            neighbor_node.h = calculate_heuristic(map, neighbor, goal)
+            neighbor_node.h = calculate_heuristic(map,current_node.position, neighbor, goal)
 
             # Calculate the total cost of the neighbor node
             neighbor_node.f = neighbor_node.g + neighbor_node.h
@@ -208,9 +200,20 @@ goal = (main.ZZ.x, main.ZZ.y)
 path = search_map_with_portals(main.carte, start, goal)
 x = [point[0] for point in path]
 y = [point[1] for point in path]
+print("a", path)
+print()
 plt.plot(x,y)
 plt.show()
-plt.plot([main.carte.alt(point) for point in path])
+plt.plot(list(range(len(path))), [main.carte.alt(Point(point)) for point in path])
+plt.show()
+pts = np.array([[point[0], point[1]] for point in path], dtype=np.int32)
+pts = pts.reshape((-1,1,2))
+print(path)
+print()
+img = cv2.polylines(main.carte.carte_color,pts,True,(0,255,0), 1)
+img = cv2.resize(img, (500,500))
+cv2.imshow("test", img)
+plt.plot(list(range(len(path))), [main.carte.alt(point) for point in path])
 plt.show()
 # Print the path
 print(path)

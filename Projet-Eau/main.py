@@ -2,11 +2,16 @@ from flou_import import *
 from Classes import *
 from Rules import *
 from Objets import *
-
-ZZ = Village(30, 40, NFT(10000, 20000, 30000, 1, 'hab'), ressenti.v(0.2, 1),
-             {"hopital": 2, "ecole": 3, "gouvernement": 1})
 carte = Carte("test_elevation.png")
-S = Source(200, 318, couleur_eau.v(0.2, 1), NFT(1, 2, 3, 1, 'debit') * 30, odeur_eau.v(0, 0, 0.2))
+carte.carte = cv2.resize(carte.carte, (100,100))
+carte.carte_color = cv2.resize(carte.carte_color, (100,100))
+carte.l, carte.L = 100,100
+ZZ = Village(carte, 0, 0, NFT(10000, 20000, 30000, 1, 'hab'), ressenti.v(0.2, 1),
+             {"hopital": 2, "ecole": 3, "gouvernement": 1})
+
+print(carte)
+S = Source(carte, 99, 99, couleur_eau.v(0.2, 1), NFT(1, 2, 3, 1, 'debit') * 30, odeur_eau.v(0, 0, 0.2))
+
 
 
 def main():

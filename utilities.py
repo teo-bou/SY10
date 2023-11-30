@@ -313,7 +313,7 @@ class Table():
         self.lb_classe1 = self.rules.columns.values[1:]
         self.lb_classe2 = list(self.rules[self.label])
         self.rules.set_index(self.label, inplace=True, drop=True)
-        self.lb_result = [i for i in np.unique(self.rules) if i not in self.lb_classe2]
+        self.lb_result = [i for i in np.unique(self.rules)]
 
     def inference(self, val1: dict, val2: dict, tconorme=max, tnorme=min):
 
@@ -329,7 +329,7 @@ class Table():
                 result = ligne.loc[classe2]
                 val_result = tnorme(val1[classe1], val2[classe2])
                 resultat[result] = tconorme(resultat[result], val_result)
-
+        print(resultat)
         return resultat
 
     def __str__(self):

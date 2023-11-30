@@ -7,6 +7,8 @@ class Point():
     def __init__(self, point):
         self.x = point[0]
         self.y = point[1]
+    def __str__(self):
+        return f"({self.x}, {self.y})"
 def line(x0, y0, x1, y1):
     steep = abs(y1 - y0) > abs(x1 - x0)
     if steep:
@@ -45,11 +47,13 @@ def line(x0, y0, x1, y1):
     return line
 class Carte():
     def __init__(self, carte, l = 500, L = 500):
-        self.carte = self.lire_carte(carte)
-        self.alt_min = 0
-        self.alt_max = difference_altitude.range.b
         self.l = l
         self.L = L
+        self.carte_color = None
+        self.carte = None
+        self.lire_carte(carte)
+        self.alt_min = 0
+        self.alt_max = difference_altitude.range.b
         self.x_max = difference_distance.range.b / math.sqrt(2)
         self.y_max = difference_distance.range.b / math.sqrt(2)
 
@@ -60,9 +64,12 @@ class Carte():
         return f"Carte allant de x=[0;{self.x_max}], y = [0; {self.y_max}], alt = [{self.alt_min}; {self.alt_max}]"
     def lire_carte(self, carte):
         image_elevation = cv2.imread("./cartes/"+carte)
+        self.carte_color = image_elevation
         image_gray = cv2.cvtColor(image_elevation, cv2.COLOR_BGR2GRAY)
+        self.carte = image_gray
         self.l, self.L = image_gray.shape[0], image_gray.shape[1]
-        return image_gray
+
+
 
 
     def distance(self, a, b):
@@ -93,7 +100,7 @@ class Carte():
         ligne = [self.alt(ligne[i]) for i in range(0,len(ligne), pas)]
         print(ligne)
         plt.plot(list(range(len(ligne))),ligne)
-        carte = cv2.line(self.carte, (x1, y1), (x2, y2), (255, 0, 0), 2)
+        carte = cv2.line(self.carte_color, (x1, y1), (x2, y2), (255, 0, 0), 2)
         cv2.imshow('Carte', carte)
         plt.show()
 
@@ -104,9 +111,9 @@ class Carte():
             x,y = objet
         else:
             x,y = objet.x,objet.y
-        x,y = int(map_range(x, 0, self.x_max, 0, self.l)), int(map_range(y, 0, self.y_max, 0, self.L))
-        alt = self.carte[x][y]
-        map_range(alt, 0, 255, self.alt_min, self.alt_max)
+        #x,y = int(map_range(x, 0, self.x_max, 0, self.l)), int(map_range(y, 0, self.y_max, 0, self.L))
+        alt = self.carte[y][x]
+        #map_range(alt, 0, 255, self.alt_min, self.alt_max)
         return alt
     def alt_cum(self, a, b):
         ligne = line(a.x, a.y, b.x, b.y)
@@ -118,13 +125,16 @@ class Carte():
 
 
 class Village():
-    def __init__(self, x, y, nb_habitants, ressenti, infrastructure):
+    def __init__(self, carte, x, y, nb_habitants, ressenti, infrastructure):
+        self.carte = carte
+        x, y = int(map_range(x, 0, carte.x_max, 0, carte.l)), int(map_range(y, 0, carte.y_max, 0, carte.L))
         self.x = x
         self.y = y
         self.nb_habitants = nb_habitants
         self.ressenti = ressenti
         self.infrastructure = infrastructure
         self.besoin = self.eval_besoin()
+
     def eval_besoin_infra(self):
         infrastructure_dico_fixe = {"hopital":NFT(1625, 2500, 3000, 1, "hopital"), "gouvernement": IFT(325, 500, 1000, 1300, 1, "gouvernement")}
         infrastructure_dico_variable = {"hopital": NFT(325, 500, 750, 1, "hopital"), "ecole": NFT(6.5,10, 15, 1, "ecole")}
@@ -151,7 +161,10 @@ class Village():
 
 
 class Source():
-    def __init__(self, x, y, couleur, debit, odeur):
+    def __init__(self, carte,  x, y, couleur, debit, odeur):
+        self.carte = carte
+        x, y = int(map_range(x, 0, carte.x_max, 0, carte.l)), int(map_range(y, 0, carte.y_max, 0, carte.L))
+
         self.x = x
         self.y = y
         self.couleur = couleur
@@ -167,10 +180,18 @@ def CAF2(village, source):
     return prop_debit_besoin.possibilite(ift.poly())
 
 
-def calculer_score(village, source):
+def calculer_score(carte, village, source):
     proportion_debit_besoin = CAF2(village, source)
     qualite_eau = SIF5.inference(source.couleur, source.odeur)
-    score_eau = SIF7.inference(proportion_debit_besoin, qualite_eau)
+    score_eau = SIF7.inference( proportion_debit_besoin, qualite_eau)
+    diff_altitude = difference_altitude.v(abs(carte.alt(village)-carte.alt(source)))
+    altitude_cum = altitude_cumulee.v(abs(carte.alt_cum(village, source)))
+    difficulte_geo = SIF4.inference(altitude_cum, diff_altitude)
+    diff_dist = difference_distance.v(carte.distance(village, source))
+    score_geo = SIF6.inference( diff_dist, difficulte_geo)
+    score = SIF8.inference(score_geo, score_eau)
+    score_defuzz = score_village.eval(score)
+    return (score_defuzz, score)
 
 
 def prop_sources_besoins(villages, sources):
