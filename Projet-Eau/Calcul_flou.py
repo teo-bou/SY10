@@ -62,6 +62,9 @@ def scores_villages_sources(carte, liste_village, liste_sources):
         for source in liste_sources:
             score = calculer_score(carte, village, source)
             dico[(village, source)] = score[0]
+            print(score)
+            print()
+            dico[((village.x, village.y), (source.x, source.y))] = score[0]
     return dico
 
 
@@ -72,12 +75,12 @@ def scores_villages_sources(carte, liste_village, liste_sources):
 
 
 
-carte = Carte("test_elevation.png", type_terrain=type_terrain.v(0.5, 2), accessibilite=accessibilite.v(0.8,0.3,0))
+carte = Carte("test_elevation.png")
 carte.carte = cv2.resize(carte.carte, (100,100))
 carte.carte_color = cv2.resize(carte.carte_color, (100,100))
 carte.l, carte.L = 100,100
 villages = generate_village(carte, 5)
 print(villages)
-sources = generate_sources(carte, 16)
+sources = generate_sources(carte, 5)
 print(sources)
-print(faisabilite(carte, villages, sources))
+print(scores_villages_sources(carte, villages, sources))
