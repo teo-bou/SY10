@@ -46,7 +46,7 @@ def line(x0, y0, x1, y1):
         line.reverse()
     return line
 class Carte():
-    def __init__(self, carte, l = 500, L = 500):
+    def __init__(self, carte, l = 500, L = 500, accessibilite =None, type_terrain = None):
         self.l = l
         self.L = L
         self.carte_color = None
@@ -56,6 +56,8 @@ class Carte():
         self.alt_max = difference_altitude.range.b
         self.x_max = difference_distance.range.b / math.sqrt(2)
         self.y_max = difference_distance.range.b / math.sqrt(2)
+        self.accessibilite = accessibilite
+        self.type_terrain = type_terrain
 
 
     def __str__(self):
@@ -121,7 +123,7 @@ class Carte():
         return alt_cum
 
     def dist_alt(self, a, b):
-        return math.dist(self.alt(a), self.alt(b))
+        return abs(self.alt(a)-  self.alt(b))
 
 
 class Village():
@@ -190,14 +192,14 @@ def calculer_score(carte, village, source):
     diff_dist = difference_distance.v(carte.distance(village, source))
     score_geo = SIF6.inference( diff_dist, difficulte_geo)
     score = SIF8.inference(score_geo, score_eau)
-    score_defuzz = score_village.eval(score)
+    score_defuzz = score_village_src.eval(score)
     return (score_defuzz, score)
 
 
 def prop_sources_besoins(villages, sources):
     debit = sum([source.debit for source in sources])
     besoin = sum([village.besoin for village in villages])
-    ift = debit * 86400 * 0.6 / besoin  # on calcule 0.4 de perte
+    ift = debit * 86400 / besoin  # on calcule 0.4 de perte
     ift.label = "prop debit/besoin total"
     return prop_debit_besoin.possibilite(ift.poly())
 

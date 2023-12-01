@@ -10,7 +10,7 @@ ZZ = Village(carte, 0, 0, NFT(10000, 20000, 30000, 1, 'hab'), ressenti.v(0.2, 1)
              {"hopital": 2, "ecole": 3, "gouvernement": 1})
 
 print(carte)
-S = Source(carte, 99, 99, couleur_eau.v(0.2, 1), NFT(1, 2, 3, 1, 'debit') * 30, odeur_eau.v(0, 0, 0.2))
+S = Source(carte, 1200, 1200, couleur_eau.v(0.2, 1), NFT(1, 2, 3, 1, 'debit') * 30, odeur_eau.v(0, 0, 0.2))
 
 
 

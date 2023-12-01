@@ -19,7 +19,7 @@ SIF3_2 = Table("SIF 3.2.csv")
 
 SIF3 = Table_mult(ressenti, SIF3_1, SIF3_2, label="faisabilite")
 
-SIF4 = Table("SIF 4.csv")
+SIF4 = Table("SIF 4.csv", meaning="difficulte geo")
 
 SIF5 = Table("SIF 5.csv")
 

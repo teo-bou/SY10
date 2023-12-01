@@ -278,7 +278,7 @@ class Classe():
         donne la valeur finale déffuzifié à partir du dictionnaire d'appartenance au IFTs
         """
         poly = self.defuz(resultat)
-        return self.v(poly.centroid.x)
+        return poly.centroid.x
 
     def __str__(self):
         return f"{self.label} : {self.classes}"
@@ -316,8 +316,6 @@ class Table():
         self.lb_result = [i for i in np.unique(self.rules)]
 
     def inference(self, val1: dict, val2: dict, tconorme=max, tnorme=min):
-
-        print(list(val1.keys()))
         if not set(list(val1.keys())) == set(self.lb_classe1):
             raise ValueError(f" {val1.keys()} ne matche pas les valeurs {self.lb_classe1}")
         if not set(list(val2.keys())) == set(self.lb_classe2):
@@ -329,7 +327,7 @@ class Table():
                 result = ligne.loc[classe2]
                 val_result = tnorme(val1[classe1], val2[classe2])
                 resultat[result] = tconorme(resultat[result], val_result)
-        print(resultat)
+        print(self.meaning, resultat)
         return resultat
 
     def __str__(self):
@@ -356,8 +354,10 @@ class Table_mult():
 
             table = self.table[key]
             result_tmp = table.inference(val1, val2, tconorme, tnorme)
+            for key in [key for key in self.lb_result if key not in result_tmp.keys() ]:
+                result_tmp[key] = 0
             resultat = {idx: tconorme(resultat[idx], tnorme(result_tmp[idx], degre)) for idx in resultat.keys()}
-
+        print(self.label, resultat)
         return resultat
 
     def __str__(self):
