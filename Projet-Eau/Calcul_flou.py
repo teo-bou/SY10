@@ -64,7 +64,7 @@ def scores_villages_sources(carte, liste_village, liste_sources):
             dico[(village, source)] = score[0]
             print(score)
             print()
-            dico[((village.x, village.y), (source.x, source.y))] = score[0]
+            #dico[((village.x, village.y), (source.x, source.y))] = score[0]
     return dico
 
 
@@ -75,12 +75,36 @@ def scores_villages_sources(carte, liste_village, liste_sources):
 
 
 
-carte = Carte("test_elevation.png")
+carte = Carte("test_elevation.png", type_terrain=type_terrain.v(0.6,0.3), accessibilite=accessibilite.v(0.7,0.5,0))
 carte.carte = cv2.resize(carte.carte, (100,100))
 carte.carte_color = cv2.resize(carte.carte_color, (100,100))
 carte.l, carte.L = 100,100
 villages = generate_village(carte, 5)
-print(villages)
+villages = [Village(carte, 0, 0, NFT(1500, 2700, 3000, 1, 'hab'), ressenti.v(0.2, 0.8),
+             {"hopital": 1, "ecole": 3, "gouvernement": 1}, "A"),
+Village(carte, 1000, 1000, NFT(500, 1000, 1200, 1, 'hab'), ressenti.v(0, 0.8),
+             {"hopital": 2, "ecole": 3, "gouvernement": 0}, "B"),
+Village(carte, 200, 200, NFT(2100, 2200, 2300, 1, 'hab'), ressenti.v(0.2, 0.5),
+             {"hopital": 3, "ecole": 1, "gouvernement": 1}, "C"),
+Village(carte, 500, 700, NFT(5000, 10000, 15000, 1, 'hab'), ressenti.v(0.5, 0.7),
+             {"hopital": 2, "ecole": 2, "gouvernement": 1}, "D")
+            ]
+#print([str(village)for village in villages])
+print()
 sources = generate_sources(carte, 5)
-print(sources)
-print(scores_villages_sources(carte, villages, sources))
+sources = [
+Source(carte, 1100, 1000, couleur_eau.v(0.2, 1), NFT(10, 15, 16, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "1"),
+Source(carte, 125, 210, couleur_eau.v(0.1, 0.7), NFT(1, 2, 3, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "2"),
+Source(carte, 840, 720, couleur_eau.v(0.4, 6), NFT(1, 2, 3, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "3"),
+Source(carte, 499, 344, couleur_eau.v(1, 0.3), NFT(2, 3, 4, 1, 'debit'), odeur_eau.v(0, 0, 0.2), "4"),
+Source(carte, 123, 456, couleur_eau.v(0.2, 1), NFT(1, 2, 3, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "5"),
+Source(carte, 998, 499, couleur_eau.v(1, 0.8), NFT(2, 3, 4, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "6")
+
+]
+# print([str(source) for source in sources])
+print()
+
+print()
+score_dict = scores_villages_sources(carte, villages, sources)
+print()
+print(faisabilite(carte, villages, sources))

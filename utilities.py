@@ -94,7 +94,9 @@ class IFT():
         """dans la
         donne la valeur d'appartenance d'un point à l'intervalle
         """
-        if x < self.a:
+        if x == self.a and self.a == self.b:
+            return self.h
+        if x <= self.a:
             return 0
         if x > self.a and x <= self.b:
             return self.h * ((x - self.a) / (self.b - self.a))
@@ -225,6 +227,7 @@ class Classe():
         x = max(x, self.range.a)
         appartenances = {}
         for ift in self.valeurs:
+            print(ift, x)
             appartenances[ift.label] = ift.v(x)
         return appartenances
 

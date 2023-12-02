@@ -189,34 +189,34 @@ def search_map_with_portals(map: List[List[int]], start: Tuple[int, int], goal: 
 
 
 # Example usage:
-
+def show_map(map, start, goal):
 
 
 # Define the start and goal nodes
-start = (main.S.x, main.S.y)
-goal = (main.ZZ.x, main.ZZ.y)
+    start = (start.x, start.y)
+    goal = (goal.x, goal.y)
 
-# Search the map using A* algorithm with portals
-path = search_map_with_portals(main.carte, start, goal)
-x = [point[0] for point in path]
-y = [point[1] for point in path]
-print("a", path)
-print()
-plt.plot(x,y)
-plt.show()
-plt.plot(list(range(len(path))), [main.carte.alt(Point(point)) for point in path])
-plt.show()
-pts = np.array([[point[0], point[1]] for point in path], dtype=np.int32)
-pts = pts.reshape((-1,1,2))
-print(path)
-print()
-img = cv2.polylines(main.carte.carte_color,pts,True,(0,255,0), 1)
-img = cv2.resize(img, (500,500))
-cv2.imshow("test", img)
-plt.plot(list(range(len(path))), [main.carte.alt(point) for point in path])
-plt.show()
+    # Search the map using A* algorithm with portals
+    path = search_map_with_portals(map, start, goal)
+    x = [point[0] for point in path]
+    y = [point[1] for point in path]
+    print("a", path)
+    print()
+    plt.plot(x,y)
+    plt.show()
+    plt.plot(list(range(len(path))), [map.alt(Point(point)) for point in path])
+    plt.show()
+    pts = np.array([[point[0], point[1]] for point in path], dtype=np.int32)
+    pts = pts.reshape((-1,1,2))
+    print(path)
+    print()
+    img = cv2.polylines(map.carte_color,pts,True,(0,255,0), 1)
+    img = cv2.resize(img, (500,500))
+    cv2.imshow("test", img)
+    plt.plot(list(range(len(path))), [map.alt(point) for point in path])
+    plt.show()
 # Print the path
-print(path)
+
 # if path:
 #     print("Path found:")
 #     for node in path:

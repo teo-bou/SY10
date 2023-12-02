@@ -3,6 +3,8 @@ from Classes import *
 from Rules import *
 import math
 import cv2
+import warnings
+#warnings.filterwarnings('ignore')
 class Point():
     def __init__(self, point):
         self.x = point[0]
@@ -68,7 +70,7 @@ class Carte():
         image_elevation = cv2.imread("./cartes/"+carte)
         self.carte_color = image_elevation
         image_gray = cv2.cvtColor(image_elevation, cv2.COLOR_BGR2GRAY)
-        self.carte = image_gray
+        self.carte = np.array(image_gray,  dtype=np.float64)
         self.l, self.L = image_gray.shape[0], image_gray.shape[1]
 
 
@@ -123,11 +125,12 @@ class Carte():
         return alt_cum
 
     def dist_alt(self, a, b):
-        return abs(self.alt(a)-  self.alt(b))
+        return abs(self.alt(a) -  self.alt(b))
 
 
 class Village():
-    def __init__(self, carte, x, y, nb_habitants, ressenti, infrastructure):
+    def __init__(self, carte, x, y, nb_habitants, ressenti, infrastructure, lb=""):
+        self.lb = lb
         self.carte = carte
         x, y = int(map_range(x, 0, carte.x_max, 0, carte.l)), int(map_range(y, 0, carte.y_max, 0, carte.L))
         self.x = x
@@ -158,22 +161,28 @@ class Village():
 
 
     def __str__(self):
+        if self.lb != "":
+            return self.lb
         return f" nb hab ≈ {(self.nb_habitants.b + self.nb_habitants.c)/2} | {self.ressenti} {self.infrastructure}| besoin : {self.besoin} "
 
 
 
 class Source():
-    def __init__(self, carte,  x, y, couleur, debit, odeur):
+    def __init__(self, carte,  x, y, couleur, debit, odeur, lb=""):
         self.carte = carte
         x, y = int(map_range(x, 0, carte.x_max, 0, carte.l)), int(map_range(y, 0, carte.y_max, 0, carte.L))
-
+        self.lb = lb
         self.x = x
         self.y = y
         self.couleur = couleur
         self.debit = debit
         self.odeur = odeur
 
-
+    def __str__(self):
+        if self.lb != "":
+            return self.lb
+        else:
+            return self
 def CAF2(village, source):
     besoin = village.besoin
     debit = source.debit
@@ -188,6 +197,7 @@ def calculer_score(carte, village, source):
     score_eau = SIF7.inference( proportion_debit_besoin, qualite_eau)
     diff_altitude = difference_altitude.v(abs(carte.alt(village)-carte.alt(source)))
     altitude_cum = altitude_cumulee.v(abs(carte.alt_cum(village, source)))
+    print(altitude_cum, diff_altitude)
     difficulte_geo = SIF4.inference(altitude_cum, diff_altitude)
     diff_dist = difference_distance.v(carte.distance(village, source))
     score_geo = SIF6.inference( diff_dist, difficulte_geo)
