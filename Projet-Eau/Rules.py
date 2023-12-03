@@ -19,14 +19,14 @@ SIF3_2 = Table("SIF 3.2.csv")
 
 SIF3 = Table_mult(ressenti, SIF3_1, SIF3_2, label="faisabilite")
 
-SIF4 = Table("SIF 4.csv", meaning="difficulte geo")
+SIF4 = Table("SIF 4.csv", meaning="difficulte geographique")
 
-SIF5 = Table("SIF 5.csv")
+SIF5 = Table("SIF 5.csv", meaning="qualite eau")
 
-SIF6 = Table("SIF 6.csv")
+SIF6 = Table("SIF 6.csv", meaning="score geographique")
 
-SIF7 = Table("SIF 7.csv")
+SIF7 = Table("SIF 7.csv", meaning="score eau")
 
-SIF8 = Table("SIF 8.csv")
+SIF8 = Table("SIF 8.csv", meaning="score du village")
 
 
