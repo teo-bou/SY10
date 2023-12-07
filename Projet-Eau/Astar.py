@@ -1,105 +1,210 @@
-
-from heapq import *
-import math
-import main
-
-
-def get_neighbours(carte, x, y):
-    check_neighbour = lambda x, y: True if 0 <= x < cols and 0 <= y < rows else False
-    ways = [-1, 0], [0, -1], [1, 0], [0, 1], [-1, -1], [1, -1], [1, 1], [-1, 1]
-    return [(carte.alt((x,y)), (x + dx, y + dy)) for dx, dy in ways if check_neighbour(x + dx, y + dy)]
+import random
+from typing import List, Tuple
+from heapq import heappop, heappush
 
 
+from Objets import *
+Colors = [(255,0,0), (0,255,0), (0,0,255), (255, 255, 0), (0, 255, 255), (255, 0, 255), (120, 0, 0)]
+
+class Node:
+    """
+    Class to represent a node in the map.
+
+    Attributes:
+    - position: Tuple[int, int]
+        The (x, y) coordinates of the node in the map.
+    - g: float
+        The cost from the start node to this node.
+    - h: float
+        The estimated cost from this node to the goal node.
+    - f: float
+        The total cost of the node (g + h).
+    - parent: Node
+        The parent node from which this node is reached.
+    """
+
+    def __init__(self, position: Tuple[int, int]):
+        """
+        Constructor to instantiate the Node class.
+
+        Parameters:
+        - position: Tuple[int, int]
+            The (x, y) coordinates of the node in the map.
+        """
+
+        self.position = position
+        self.g = 0
+        self.h = 0
+        self.f = 0
+        self.parent = None
+
+    def __lt__(self, other):
+        """
+        Less than comparison operator for nodes.
+
+        This is used for comparing nodes in the priority queue.
+
+        Parameters:
+        - other: Node
+            The other node to compare with.
+
+        Returns:
+        - bool:
+            True if this node has a lower f value than the other node, False otherwise.
+        """
+
+        return self.f < other.f
 
 
-def heuristic(carte, a, b):
-   return abs(a[0] - b[0]) + abs(a[1] - b[1]) + 0.1*abs(carte.alt(a)-carte.alt(b))
+def calculate_heuristic(map, neighbour : Tuple[int,int], current: Tuple[int, int], goal: Tuple[int, int]) -> float:
+    """
+    Calculates the heuristic value (estimated cost) between two nodes.
+
+    In this case, we use the Manhattan distance as the heuristic.
+
+    Parameters:
+    - current: Tuple[int, int]
+        The (x, y) coordinates of the current node.
+    - goal: Tuple[int, int]
+        The (x, y) coordinates of the goal node.
+
+    Returns:
+    - float:
+        The estimated cost between the current and goal nodes.
+    """
+
+    return   abs(current[0] - goal[0]) + abs(current[1] - goal[1]) + 2* abs(map.alt(Point(neighbour), res=True)- map.alt(Point(current), res = True))
 
 
-# def heuristic(a, b):
-#    return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
+def get_neighbors(current: Tuple[int, int], map_size: Tuple[int, int]) -> List[Tuple[int, int]]:
+    """
+    Returns the valid neighboring nodes of a given node.
+
+    Parameters:
+    - current: Tuple[int, int]
+        The (x, y) coordinates of the current node.
+    - map_size: Tuple[int, int]
+        The size of the map (number of rows, number of columns).
+
+    Returns:
+    - List[Tuple[int, int]]:
+        A list of valid neighboring nodes.
+    """
+
+    neighbors = []
+    x, y = current
+
+    # Check the four cardinal directions
+    if x > 0:
+        neighbors.append((x - 1, y))
+    if x < map_size[0] - 1:
+        neighbors.append((x + 1, y))
+    if y > 0:
+        neighbors.append((x, y - 1))
+    if y < map_size[1] - 1:
+        neighbors.append((x, y + 1))
+
+    return neighbors
 
 
-def dijkstra(carte, start, goal, graph):
-    queue = []
-    heappush(queue, (0, start))
-    cost_visited = {start: 0}
-    visited = {start: None}
-
-    while queue:
-        cur_cost, cur_node = heappop(queue)
-        if cur_node == goal:
-            break
-
-        try:
-            neighbours = graph[cur_node]
-            print(cur_node)
-            for neighbour in neighbours:
-                neigh_cost, neigh_node = neighbour
-                new_cost = cost_visited[cur_node] + neigh_cost
-
-                if neigh_node not in cost_visited or new_cost < cost_visited[neigh_node]:
-                    priority = new_cost + heuristic(carte, neigh_node, goal)
-                    heappush(queue, (priority, neigh_node))
-                    cost_visited[neigh_node] = new_cost
-                    visited[neigh_node] = cur_node
-        except:
-            pass
-    return visited
+def search_map(map: List[List[int]], start: Tuple[int, int], goal: Tuple[int, int]) -> List[
+    Tuple[int, int]]:
+    # Check if the start or goal nodes are out of bounds
+    if start[0] < 0 or start[0] >= map.l or start[1] < 0 or start[1] >= map.L:
+        raise ValueError("Start node is out of bounds.")
+    if goal[0] < 0 or goal[0] >= map.l or goal[1] < 0 or goal[1] >= map.L:
+        raise ValueError("Goal node is out of bounds.")
+    start = (int(map_range(start[0], 0, map.l, 0, map.resize_x)), int(map_range(start[1], 0, map.L, 0, map.resize_y)))
+    goal = (int(map_range(goal[0], 0, map.l, 0, map.resize_x)), int(map_range(goal[1], 0, map.L, 0, map.resize_y)))
+    print(start)
+    print(goal)
 
 
 
-grid = ['22222222222222222222212',
-        '22222292222911112244412',
-        '22444422211112911444412',
-        '24444444212777771444912',
-        '24444444219777771244112',
-        '92444444212777791192144',
-        '22229444212777779111144',
-        '11111112212777772771122',
-        '27722211112777772771244',
-        '27722777712222772221244',
-        '22292777711144429221244',
-        '22922777222144422211944',
-        '22222777229111111119222']
-grid = [[int(char) for char in string ] for string in grid]
-# adjacency dict
-rows, cols = main.carte.l, main.carte.L
-graph = {}
-for y, row in enumerate(main.carte.carte):
-    for x, col in enumerate(row):
-        graph[(x, y)] = graph.get((x, y), []) + get_neighbours(main.carte, x, y)
+    # Initialize the open and closed lists
+    open_list = []
+    closed_list = set()
 
-start = (0, 7)
-goal = start
-queue = []
-heappush(queue, (0, start))
-visited = {start: None}
+    # Create the start and goal nodes
+    start_node = Node(start)
+    goal_node = Node(goal)
 
-# bg = pg.image.load('img/2.png').convert()
-# bg = pg.transform.scale(bg, (cols * TILE, rows * TILE))
-while True:
-    # fill screen
-    #sc.blit(bg, (0, 0))
+    # Calculate the heuristic value for the start node
+    #start_node.h = calculate_heuristic(map,start, start, goal)
+    start_node.f = start_node.h
 
-    # bfs, get path to mouse click
-    mouse_pos = (main.S.x, main.S.y)
-    print(mouse_pos)
-    if mouse_pos:
-        visited = dijkstra(main.carte, start, mouse_pos, graph)
-        goal = mouse_pos
-    #print(visited)
-    # draw path
-    path_head, path_segment = goal, goal
+    # Add the start node to the open list
+    heappush(open_list, start_node)
+    path1 = []
+    # Start the A* algorithm
+    while open_list:
+        # Get the node with the lowest f value from the open list
+        current_node = heappop(open_list)
 
-    while path_segment and path_segment in visited:
-       print(path_head, path_segment)
-    #     pg.draw.circle(sc, pg.Color('blue'), *get_circle(*path_segment))
-    #     path_segment = visited[path_segment]
-    # pg.draw.circle(sc, pg.Color('green'), *get_circle(*start))
-    # pg.draw.circle(sc, pg.Color('magenta'), *get_circle(*path_head))
-    #
-    # # pygame necessary lines
-    # [exit() for event in pg.event.get() if event.type == pg.QUIT]
-    # pg.display.flip()
-    # clock.tick(30)
+        # Check if the current node is the goal node
+        if current_node.position == goal:
+            # Reconstruct the path from the goal node to the start node
+            path = []
+            while current_node:
+                path.append(current_node.position)
+                current_node = current_node.parent
+            return path[::-1]  # Reverse the path to get it from start to goal
+
+        # Add the current node to the closed list
+        closed_list.add(current_node.position)
+        path1.append(current_node.position)
+
+        # Get the neighboring nodes of the current node
+        neighbors = get_neighbors(current_node.position, (map.resize_x, map.resize_y))
+
+        for neighbor in neighbors:
+            # Check if the neighbor is an obstacle or already in the closed list
+            if neighbor in closed_list:
+                continue
+
+            # Create a new node for the neighbor
+            neighbor_node = Node(neighbor)
+
+            # Calculate the cost from the start node to the neighbor node
+            neighbor_node.g = current_node.g + 1
+
+            # Calculate the heuristic value for the neighbor node
+            neighbor_node.h = calculate_heuristic(map,current_node.position, neighbor, goal)
+
+            # Calculate the total cost of the neighbor node
+            neighbor_node.f = neighbor_node.g + neighbor_node.h
+
+            # Set the parent of the neighbor node
+            neighbor_node.parent = current_node
+
+            # Add the neighbor node to the open list
+            heappush(open_list, neighbor_node)
+
+    # No path found
+    return []
+
+def tracer(map, img, path, color=None):
+    pts = np.array([[int(map_range(point[0], 0, map.resize_x, 0, map.l)), int(map_range(point[1], 0, map.resize_y, 0, map.L))]for point in path],
+                   dtype=np.int32)
+    pts = pts.reshape((-1, 1, 2))
+    if color == None:
+        color = Colors[random.randint(0, len(Colors) - 1)]
+
+    img = cv2.polylines(img.copy(), pts, True, color, 3)
+    return img
+
+def show_map(map, start, goal):
+
+
+    start = (start.x, start.y)
+
+    goal = (goal.x, goal.y)
+
+
+    # Search the map using A* algorithm
+    path = search_map(map, start, goal)
+    img = tracer(map, map.carte_color, path)
+    plt.imshow(img)
+    plt.show()
+
+

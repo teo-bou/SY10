@@ -2,8 +2,9 @@ from flou_import import *
 from Classes import *
 from Rules import *
 from generator_data import *
-
-
+from matching import optimisation_score
+from random import randint
+from Astar import *
 def faisabilite(carte, liste_village, liste_sources):
 
     res_total_fav = sum([ village.ressenti["favorable"] for village in liste_village ])/len(liste_village)
@@ -50,11 +51,6 @@ def faisabilite(carte, liste_village, liste_sources):
     faisable = SIF3.inference(res_total, prop_src_besoin, score_terrain)
     print(faisable)
     return faisable
-
-
-
-
-
     print(res_total)
 def scores_villages_sources(carte, liste_village, liste_sources):
     dico = {}
@@ -62,48 +58,66 @@ def scores_villages_sources(carte, liste_village, liste_sources):
         for source in liste_sources:
             score = calculer_score(carte, village, source)
             dico[(village, source)] = score[0]
-            print(score)
-            print()
-            #dico[((village.x, village.y), (source.x, source.y))] = score[0]
     return dico
+def matching_score_village(carte, liste_village, liste_sources):
+    score_dico = scores_villages_sources(carte, liste_village, liste_sources)
+    matching = optimisation_score(score_dico)
+    return matching
+def tracer_carte(carte, liste_village, liste_sources):
+    colors = {village : (randint(0,255), randint(0,255), randint(0,255)) for village in liste_village}
+    matching = matching_score_village(carte, liste_village, liste_sources)
+
+    carte_globale = carte.carte_color.copy()
+    for village, sources in matching.items():
+        color = colors[village]
+        carte_village = carte.carte_color.copy()
+        for source in sources:
+            start = (source.x, source.y)
+            goal = (village.x, village.y)
+            path = search_map(carte, start, goal)
+            carte_globale = tracer(carte, carte_globale, path, color)
+            carte_village = tracer(carte, carte_village, path, color)
+        plt.imshow(carte_village)
+        plt.show()
+    plt.imshow(carte_globale)
+    plt.show()
 
 
 
 
 
 
+if __name__ == "__main__":
+    pass
 
+carte = Carte("test_elevation.png", type_terrain=type_terrain.v(0.6,0.3), accessibilite=accessibilite.v(0.7,0.5,0), resize_x=200, resize_y=200)
 
-
-carte = Carte("test_elevation.png", type_terrain=type_terrain.v(0.6,0.3), accessibilite=accessibilite.v(0.7,0.5,0))
-carte.carte = cv2.resize(carte.carte, (100,100))
-carte.carte_color = cv2.resize(carte.carte_color, (100,100))
-carte.l, carte.L = 100,100
 villages = generate_village(carte, 5)
 villages = [Village(carte, 0, 0, NFT(1500, 2700, 3000, 1, 'hab'), ressenti.v(0.2, 0.8),
              {"hopital": 1, "ecole": 3, "gouvernement": 1}, "A"),
-Village(carte, 1000, 1000, NFT(500, 1000, 1200, 1, 'hab'), ressenti.v(0, 0.8),
+Village(carte, 0, 0, NFT(500, 1000, 1200, 1, 'hab'), ressenti.v(0, 0.8),
              {"hopital": 2, "ecole": 3, "gouvernement": 0}, "B"),
-Village(carte, 200, 200, NFT(2100, 2200, 2300, 1, 'hab'), ressenti.v(0.2, 0.5),
+Village(carte, 0, 0, NFT(2100, 2200, 2300, 1, 'hab'), ressenti.v(0.2, 0.5),
              {"hopital": 3, "ecole": 1, "gouvernement": 1}, "C"),
-Village(carte, 500, 700, NFT(5000, 10000, 15000, 1, 'hab'), ressenti.v(0.5, 0.7),
+Village(carte, 0, 0, NFT(5000, 10000, 15000, 1, 'hab'), ressenti.v(0.5, 0.7),
              {"hopital": 2, "ecole": 2, "gouvernement": 1}, "D")
             ]
-#print([str(village)for village in villages])
-print()
+print([str(village)for village in villages])
+print(carte)
+
 sources = generate_sources(carte, 5)
 sources = [
-Source(carte, 1100, 1000, couleur_eau.v(0.2, 1), NFT(10, 15, 16, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "1"),
-Source(carte, 125, 210, couleur_eau.v(0.1, 0.7), NFT(1, 2, 3, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "2"),
-Source(carte, 840, 720, couleur_eau.v(0.4, 6), NFT(1, 2, 3, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "3"),
-Source(carte, 499, 344, couleur_eau.v(1, 0.3), NFT(2, 3, 4, 1, 'debit'), odeur_eau.v(0, 0, 0.2), "4"),
-Source(carte, 123, 456, couleur_eau.v(0.2, 1), NFT(1, 2, 3, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "5"),
-Source(carte, 998, 499, couleur_eau.v(1, 0.8), NFT(2, 3, 4, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "6")
+Source(carte, 123, 1100, couleur_eau.v(0.2, 1), NFT(10, 15, 16, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "1"),
+Source(carte, 200, 1100, couleur_eau.v(0.1, 0.7), NFT(1, 2, 3, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "2"),
+Source(carte, 300, 1100, couleur_eau.v(0.4, 6), NFT(1, 2, 3, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "3"),
+Source(carte, 400, 1100, couleur_eau.v(1, 0.3), NFT(2, 3, 4, 1, 'debit'), odeur_eau.v(0, 0, 0.2), "4"),
+Source(carte, 500, 1100, couleur_eau.v(0.2, 1), NFT(1, 2, 3, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "5"),
+Source(carte, 600, 1100, couleur_eau.v(1, 0.8), NFT(2, 3, 4, 1, 'debit') , odeur_eau.v(0, 0, 0.2), "6")
 
 ]
 # print([str(source) for source in sources])
 print()
-
+tracer_carte(carte,villages, sources)
 print()
 score_dict = scores_villages_sources(carte, villages, sources)
 print()

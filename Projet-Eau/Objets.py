@@ -3,8 +3,8 @@ from Classes import *
 from Rules import *
 import math
 import cv2
-import warnings
-#warnings.filterwarnings('ignore')
+from PIL import Image
+
 class Point():
     def __init__(self, point):
         self.x = point[0]
@@ -48,12 +48,15 @@ def line(x0, y0, x1, y1):
         line.reverse()
     return line
 class Carte():
-    def __init__(self, carte, l = 500, L = 500, accessibilite =None, type_terrain = None):
+    def __init__(self, carte, l = 400, L = 400, accessibilite =None, type_terrain = None, resize_x = 100, resize_y = 100):
         self.l = l
         self.L = L
+        self.resize_x = resize_x
+        self.resize_y = resize_y
         self.carte_color = None
         self.carte = None
         self.lire_carte(carte)
+        self.carte_resized = cv2.resize(self.carte, (self.resize_x, self.resize_y))
         self.alt_min = 0
         self.alt_max = difference_altitude.range.b
         self.x_max = difference_distance.range.b / math.sqrt(2)
@@ -63,15 +66,15 @@ class Carte():
 
 
     def __str__(self):
-        cv2.imshow('Carte', self.carte)
-        cv2.waitKey(0)
+        plt.imshow(self.carte_color)
+        plt.show()
         return f"Carte allant de x=[0;{self.x_max}], y = [0; {self.y_max}], alt = [{self.alt_min}; {self.alt_max}]"
     def lire_carte(self, carte):
         image_elevation = cv2.imread("./cartes/"+carte)
         self.carte_color = image_elevation
         image_gray = cv2.cvtColor(image_elevation, cv2.COLOR_BGR2GRAY)
         self.carte = np.array(image_gray,  dtype=np.float64)
-        self.l, self.L = image_gray.shape[0], image_gray.shape[1]
+        self.L, self.l = image_gray.shape[0], image_gray.shape[1]
 
 
 
@@ -110,14 +113,14 @@ class Carte():
 
 
         cv2.waitKey(0)
-    def alt(self, objet):
+    def alt(self, objet, res=False):
         if isinstance(objet, tuple):
             x,y = objet
         else:
             x,y = objet.x,objet.y
-        #x,y = int(map_range(x, 0, self.x_max, 0, self.l)), int(map_range(y, 0, self.y_max, 0, self.L))
+        if res:
+            return self.carte_resized[y][x]
         alt = self.carte[y][x]
-        #map_range(alt, 0, 255, self.alt_min, self.alt_max)
         return alt
     def alt_cum(self, a, b):
         ligne = line(a.x, a.y, b.x, b.y)
@@ -163,7 +166,7 @@ class Village():
     def __str__(self):
         if self.lb != "":
             return self.lb
-        return f" nb hab ≈ {(self.nb_habitants.b + self.nb_habitants.c)/2} | {self.ressenti} {self.infrastructure}| besoin : {self.besoin} "
+        return f"[{self.x, self.y}],  nb hab ≈ {(self.nb_habitants.b + self.nb_habitants.c)/2} | {self.ressenti} {self.infrastructure}| besoin : {self.besoin} "
 
 
 
