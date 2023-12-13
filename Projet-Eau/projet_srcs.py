@@ -1,6 +1,2 @@
-from flou_import *
-from Objets import *
-from matching import *
-from Astar import *
-
-
+from flou_import import *
+from Calcul_flou import *
