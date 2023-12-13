@@ -48,9 +48,4 @@ def optimisation_score(dico):
 
 
 if __name__ == "__main__":
-    score_dict = Calcul_flou.score_dict
-    matching = optimisation_score(score_dict)
-    print("a",[(str(v),[str(src) for src in srcs])  for v, srcs in optimisation_score(score_dict).items()])
-    for village, sources in matching.items():
-        for source in sources:
-            pass
+    pass

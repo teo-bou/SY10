@@ -1,100 +1,49 @@
-import random
-from typing import List, Tuple
 from heapq import heappop, heappush
-
-
 from Objets import *
+
+
 Colors = [(255,0,0), (0,255,0), (0,0,255), (255, 255, 0), (0, 255, 255), (255, 0, 255), (120, 0, 0)]
 
 class Node:
     """
-    Class to represent a node in the map.
-
-    Attributes:
-    - position: Tuple[int, int]
-        The (x, y) coordinates of the node in the map.
-    - g: float
-        The cost from the start node to this node.
-    - h: float
-        The estimated cost from this node to the goal node.
-    - f: float
-        The total cost of the node (g + h).
-    - parent: Node
-        The parent node from which this node is reached.
+    Représente un point géographique sur la carte
     """
 
-    def __init__(self, position: Tuple[int, int]):
-        """
-        Constructor to instantiate the Node class.
-
-        Parameters:
-        - position: Tuple[int, int]
-            The (x, y) coordinates of the node in the map.
-        """
+    def __init__(self, position):
 
         self.position = position
-        self.g = 0
+        self.g = 0 # Ceci sont les différentes composants pour évaluer plus tard le coût d'un certain chemin, dans le but de le minimiser
         self.h = 0
         self.f = 0
-        self.parent = None
+        self.parent = None # de quelle point vient-on ?
 
     def __lt__(self, other):
         """
-        Less than comparison operator for nodes.
-
-        This is used for comparing nodes in the priority queue.
-
-        Parameters:
-        - other: Node
-            The other node to compare with.
-
-        Returns:
-        - bool:
-            True if this node has a lower f value than the other node, False otherwise.
+        Permet de faire la comparaison entre deux points ( A < B ) == True ou False ?
+        La réalise en fonction du coût du point
         """
 
         return self.f < other.f
 
 
-def calculate_heuristic(map, neighbour : Tuple[int,int], current: Tuple[int, int], goal: Tuple[int, int]) -> float:
+def calculate_heuristic(map, neighbour, current, goal) :
     """
-    Calculates the heuristic value (estimated cost) between two nodes.
-
-    In this case, we use the Manhattan distance as the heuristic.
-
-    Parameters:
-    - current: Tuple[int, int]
-        The (x, y) coordinates of the current node.
-    - goal: Tuple[int, int]
-        The (x, y) coordinates of the goal node.
-
-    Returns:
-    - float:
-        The estimated cost between the current and goal nodes.
+    Calcule à quel point emprunter le point voisin est coûteux
     """
+    # Pour cela on retourne la distance de Manhattan (abs(X2-X1) + abs(Y2-Y1)) par rapport à la destination (si on s'éloigne coût plus important) sommée à la différence d'altitude absolue entre les deux points, différence calculée sur la carte mise à l'échelle (d'où le res=True)
 
     return   abs(current[0] - goal[0]) + abs(current[1] - goal[1]) + 2* abs(map.alt(Point(neighbour), res=True)- map.alt(Point(current), res = True))
 
 
-def get_neighbors(current: Tuple[int, int], map_size: Tuple[int, int]) -> List[Tuple[int, int]]:
+def get_neighbors(current, map_size):
     """
-    Returns the valid neighboring nodes of a given node.
-
-    Parameters:
-    - current: Tuple[int, int]
-        The (x, y) coordinates of the current node.
-    - map_size: Tuple[int, int]
-        The size of the map (number of rows, number of columns).
-
-    Returns:
-    - List[Tuple[int, int]]:
-        A list of valid neighboring nodes.
+    Renvoie les différents voisins du point actuel (points que l'on peut atteindre depuis le point actuel)
     """
 
     neighbors = []
     x, y = current
 
-    # Check the four cardinal directions
+    # On regarde tous les pixels adjacents
     if x > 0:
         neighbors.append((x - 1, y))
     if x < map_size[0] - 1:
@@ -107,101 +56,107 @@ def get_neighbors(current: Tuple[int, int], map_size: Tuple[int, int]) -> List[T
     return neighbors
 
 
-def search_map(map: List[List[int]], start: Tuple[int, int], goal: Tuple[int, int]) -> List[
-    Tuple[int, int]]:
-    # Check if the start or goal nodes are out of bounds
+def search_map(map, start, goal):
+    """
+    Calcul du chemin à emprunter
+    """
+    # Vérifie que les points de départ et d'arriver sont bien sur la carte
     if start[0] < 0 or start[0] >= map.l or start[1] < 0 or start[1] >= map.L:
-        raise ValueError("Start node is out of bounds.")
+        raise ValueError("Départ est en dehors de la carte")
     if goal[0] < 0 or goal[0] >= map.l or goal[1] < 0 or goal[1] >= map.L:
-        raise ValueError("Goal node is out of bounds.")
+        raise ValueError("Arrivée est en dehors de la carte")
+
+    # Récupère et remet à l'échelle (on utilise une carte mise à l'échelle pour moins de temps de calcul) les coordonnées des points de départ et d'arrivée
+
     start = (int(map_range(start[0], 0, map.l, 0, map.resize_x)), int(map_range(start[1], 0, map.L, 0, map.resize_y)))
     goal = (int(map_range(goal[0], 0, map.l, 0, map.resize_x)), int(map_range(goal[1], 0, map.L, 0, map.resize_y)))
-    print(start)
-    print(goal)
 
 
 
-    # Initialize the open and closed lists
+
+    # Initialise la liste des points à traité et visité
     open_list = []
     closed_list = set()
 
-    # Create the start and goal nodes
     start_node = Node(start)
-    goal_node = Node(goal)
 
-    # Calculate the heuristic value for the start node
-    #start_node.h = calculate_heuristic(map,start, start, goal)
-    start_node.f = start_node.h
+    # Commence à traiter le point de départ
+    heappush(open_list, start_node) # les heaps sont des listes avec indicateur de priorité. Cela permet de prioriser les points ayant le coût le moins élevé
 
-    # Add the start node to the open list
-    heappush(open_list, start_node)
-    path1 = []
-    # Start the A* algorithm
+    # Commence l'algorithme A*
     while open_list:
-        # Get the node with the lowest f value from the open list
+        # récupere le point avec le coût le plus bas, c'est celui là qu'on traitera
         current_node = heappop(open_list)
 
-        # Check if the current node is the goal node
+        # si on a atteint notre destination
         if current_node.position == goal:
-            # Reconstruct the path from the goal node to the start node
+            # On refait le chemin en retournant à l'envers d'où on vient
             path = []
-            while current_node:
-                path.append(current_node.position)
-                current_node = current_node.parent
-            return path[::-1]  # Reverse the path to get it from start to goal
+            while current_node:  # tant qu'on trouve un parent à notre point (tant qu'on vient d'un autre point)
+                path.append(current_node.position) #on ajoute ce point
+                current_node = current_node.parent  # et ainsi de suite
+            return path[::-1]  # Pour récupérer le chemin dans le bon ordre, on l'inverse
 
-        # Add the current node to the closed list
+        # On a traité ce point et on peut donc l'ajouter dans notre liste des visités
         closed_list.add(current_node.position)
-        path1.append(current_node.position)
 
-        # Get the neighboring nodes of the current node
+        # On récupère les voisins de notre points pour calculer leur coût
         neighbors = get_neighbors(current_node.position, (map.resize_x, map.resize_y))
 
         for neighbor in neighbors:
-            # Check if the neighbor is an obstacle or already in the closed list
+            # Si on a déjà visité ce voisin, on le passe
             if neighbor in closed_list:
                 continue
 
-            # Create a new node for the neighbor
             neighbor_node = Node(neighbor)
 
-            # Calculate the cost from the start node to the neighbor node
+            # Comme on change de point, on rajoute 1 au h (qui compte la distance déjà parcourue et ainsi pousse l'algorithme à aller le plus vite possible à la destination)
             neighbor_node.g = current_node.g + 1
 
-            # Calculate the heuristic value for the neighbor node
+            # On calcule le coût pour passer à ce voisin là
             neighbor_node.h = calculate_heuristic(map,current_node.position, neighbor, goal)
 
-            # Calculate the total cost of the neighbor node
+            # Le coût total est la somme des coûts associés au chemin déjà parcourus et au passage vers ce voisin
             neighbor_node.f = neighbor_node.g + neighbor_node.h
 
-            # Set the parent of the neighbor node
+            # Indique à ce voisin que l'on vient du point actuel
             neighbor_node.parent = current_node
 
-            # Add the neighbor node to the open list
+            # Rajoute ce voisin dans la liste des points à traiter pour la suite
             heappush(open_list, neighbor_node)
 
-    # No path found
+    # Si pas de chemin trouvé
     return []
 
-def tracer(map, img, path, color=None):
-    pts = np.array([[int(map_range(point[0], 0, map.resize_x, 0, map.l)), int(map_range(point[1], 0, map.resize_y, 0, map.L))]for point in path],
-                   dtype=np.int32)
-    pts = pts.reshape((-1, 1, 2))
-    if color == None:
-        color = Colors[random.randint(0, len(Colors) - 1)]
+def tracer(map, img, path,color):
+    """
+    Affiche sur la carte le chemin
+    """
 
-    img = cv2.polylines(img.copy(), pts, True, color, 3)
+    pts = np.array([[int(map_range(point[0], 0, map.resize_x, 0, map.l)), int(map_range(point[1], 0, map.resize_y, 0, map.L))]for point in path],
+                   dtype=np.int32) # remets à l'échelle les points trouvés sur la carte plus petite à la taille de la carte originelle
+    pts = pts.reshape((-1, 1, 2)) #formattage pour OpenCV
+
+    img = cv2.polylines(img.copy(), pts, True, color, 3) # Trace le trait sur l'image donnée
     return img
 
+def croix(img, pts, color, thickness, space):
+    """
+    Trace une croix à la position donnée
+    """
+    x,y = pts
+    img = cv2.line(img.copy(), (x-space, y+space), (x+space, y-space), color, thickness) # ligne du coin gauche bas vers le haut droit
+    img = cv2.line(img.copy(), (x-space, y-space), (x+space, y+space), color, thickness) # ligne du coin gauche haut vers le bas droit
+    return img
 def show_map(map, start, goal):
+    """
+    Utilise les fonctions définies précedemment pour afficher la carte annotée
+    """
 
 
     start = (start.x, start.y)
-
     goal = (goal.x, goal.y)
 
-
-    # Search the map using A* algorithm
     path = search_map(map, start, goal)
     img = tracer(map, map.carte_color, path)
     plt.imshow(img)

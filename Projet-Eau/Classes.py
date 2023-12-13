@@ -1,5 +1,6 @@
 from flou_import import *
-## Utilisateur rentre les données
+
+## Définition des entrées floues où l'utilsateur évalue lui-même les degrés d'appartenance (Entrée floues)
 type_terrain = Classe_classification("type_terrain", "peu escarpe", "escarpe")
 accessibilite = Classe_classification("accessibilite", "peu accessible", "moyennement accessible", "accessible")
 ressenti = Classe_classification("ressenti", "defavorable", "favorable")
@@ -8,13 +9,13 @@ odeur_eau = Classe_classification("odeur de l'eau", "pas d'odeur", "odeur", "for
 
 
 
-## Nous avons défini les classes des IFT suivants
+## Classes floues ou l'entrée est soit nette (auquel cas elle est fuzzifiée) soit floues auquel cas elle est évaluée par un calcul de possibilté
 difference_distance = Classe("difference distance")
 diff_dist_faible = IFT(0, 0, 200, 900, 1, "faible")
 diff_dist_moyenne = IFT(300, 900, 1000, 1600, 1, "moyenne")
 diff_dist_elevee = IFT(1000, 1600, 1800, 1800, 1, "elevee")
 difference_distance.ajouter(diff_dist_faible, diff_dist_moyenne, diff_dist_elevee)
-#plt.title("Différence distance")
+#plt.title("Différence distance") # Permet d'afficher les différents IFTs constituants la classe floues
 #difference_distance.plot()
 
 difference_altitude = Classe("difference altitude")
