@@ -2,8 +2,10 @@ from flou_import import *
 
 ## Définition des entrées floues où l'utilsateur évalue lui-même les degrés d'appartenance (Entrée floues)
 type_terrain = Classe_classification("type_terrain", "peu escarpe", "escarpe")
+mois_saison = Classe_classification("saison", "seche", "optimale", "pluie")
 accessibilite = Classe_classification("accessibilite", "peu accessible", "moyennement accessible", "accessible")
-ressenti = Classe_classification("ressenti", "defavorable", "favorable")
+ressenti_faisabilite = Classe_classification("ressenti_faisabilite", "contre", "indifferent", "pour")
+ressenti_conflits = Classe_classification("ressenti_conflits", "tres probable", "probable", "moyennement probable", "peu probable" )
 couleur_eau = Classe_classification("couleur de l'eau", "trouble", "claire")
 odeur_eau = Classe_classification("odeur de l'eau", "pas d'odeur", "odeur", "forte odeur")
 

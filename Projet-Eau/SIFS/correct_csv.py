@@ -26,7 +26,7 @@ def move(file):
     else:
         shutil.move(file, file.replace("_corrected", ""))
 
-for file in glob.glob('./*.csv'):
+for file in glob.glob('./new/*.csv'):
     #write(file)
     #move(file)
 
