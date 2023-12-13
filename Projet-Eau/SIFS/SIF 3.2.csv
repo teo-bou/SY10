@@ -1,4 +1,4 @@
-score terrain\proportion (ressenti = defavorable) (sif ndeg3),beaucoup trop peu,peu,assez,trop
+score terrain\proportion (score humain = defavorable) (sif ndeg3),beaucoup trop peu,peu,assez,trop
 tres faible,impossible,impossible,tres difficile,difficile
 faible,impossible,tres difficile,difficile,moyen
 moyen,impossible,tres difficile,moyen,moyen
