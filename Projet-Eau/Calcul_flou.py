@@ -56,8 +56,8 @@ def faisabilite(carte, liste_village, liste_sources, show = False, defuz = False
     score_terrain = SIF2.inference(access, conditions_geologiques, diff_dist, show = show) # du score terrain
     faisable = SIF3.inference(res_total, prop_src_besoin, score_terrain,tnorme=T_probabiliste, show = True) # et enfin de la faisabilité
 
-    if defuz:
-        index = int(sum([i*faisable[key] for i, key in enumerate(faisable.keys())]))
+    if defuz: # si volonté de défuzzifier
+        index = int(sum([i*faisable[key] for i, key in enumerate(faisable.keys())])) # calcul le barycentre discret
         result_defuz = list(faisable.keys())[index]
         if show:
             print(f"Faisabilité : {result_defuz}")

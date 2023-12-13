@@ -247,8 +247,11 @@ class Classe():
         x = min(x, self.range.b)  # met x dans la plage de valeurs acceptées de la classe
         x = max(x, self.range.a)  # met x dans la plage de valeurs acceptées de la classe
         appartenances = {}  # initialise le dictionnaire renvoyé
-        for ift in self.valeurs:
-            appartenances[ift.label] = ift.v(x)  # pour chaque IFTs, associe la valeurs d'appartenance de x
+        for ift in self.valeurs: # pour chaque IFTs, associe la valeur d'appartenance de x
+            if ift.label in appartenances.keys(): # si elle a déjà été évaluée on prend le maximum entre cette valeur et l'ancienne
+                appartenances[ift.label] = max(ift.v(x), appartenances[ift.label])
+            else:
+                appartenances[ift.label] = max(ift.v(x), appartenances[ift.label])
         return appartenances
 
     def possibilite(self, poly):
