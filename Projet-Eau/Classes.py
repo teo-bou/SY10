@@ -12,6 +12,16 @@ odeur_eau = Classe_classification("odeur de l'eau", "pas d'odeur", "odeur", "for
 
 
 ## Classes floues ou l'entrée est soit nette (auquel cas elle est fuzzifiée) soit floues auquel cas elle est évaluée par un calcul de possibilté
+
+saison = Classe("saison")
+saison_seche = IFT(2,3,5,6,1,"seche")
+saison_opti = IFT(4,5,6,7,1,"optimale")
+saison_pluie = IFT(5,6,9,10, 1, "pluie")
+saison_opti2 = IFT(9,10,13,13,1,"optimale")
+saison.ajouter(saison_seche, saison_pluie, saison_opti)
+saison.plot()
+
+
 difference_distance = Classe("difference distance")
 diff_dist_faible = IFT(0, 0, 200, 900, 1, "faible")
 diff_dist_moyenne = IFT(300, 900, 1000, 1600, 1, "moyenne")
