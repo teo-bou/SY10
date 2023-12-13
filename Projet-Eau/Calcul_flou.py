@@ -2,7 +2,9 @@ from matching import optimisation_score
 from Astar import *
 import matplotlib.pyplot as plt
 import seaborn as sns
-def faisabilite(carte, liste_village, liste_sources, show = False):
+def T_probabiliste(x,y):
+    return x*y
+def faisabilite(carte, liste_village, liste_sources, show = False, defuz = False):
     """
     Calcul de la faisabilité globale du projet
     """
@@ -52,7 +54,16 @@ def faisabilite(carte, liste_village, liste_sources, show = False):
 
     conditions_geologiques = SIF1.inference(type_terr, diff_alt, alt_cum, show = show) # Calcul des conditions géologiques
     score_terrain = SIF2.inference(access, conditions_geologiques, diff_dist, show = show) # du score terrain
-    faisable = SIF3.inference(res_total, prop_src_besoin, score_terrain,show = True) # et enfin de la faisabilité
+    faisable = SIF3.inference(res_total, prop_src_besoin, score_terrain,tnorme=T_probabiliste, show = True) # et enfin de la faisabilité
+
+    if defuz:
+        index = int(sum([i*faisable[key] for i, key in enumerate(faisable.keys())]))
+        result_defuz = list(faisable.keys())[index]
+        if show:
+            print(f"Faisabilité : {result_defuz}")
+            if index <= 4:
+                print("Soyez sage au sens de Socrate, admettez l'impuissance")
+        return (defuz, faisable)
 
     return faisable
 

@@ -20,7 +20,7 @@ SIF2 = Table_mult(accessibilite, SIF2_1, SIF2_2, SIF2_3, meaning="score terrain"
 SIF3_1 = Table("SIF 3.1.csv")
 SIF3_2 = Table("SIF 3.2.csv")
 
-SIF3 = Table_mult(ressenti, SIF3_1, SIF3_2, meaning="faisabilite")
+SIF3 = Table_mult(ressenti, SIF3_2, SIF3_1, meaning="faisabilite")
 
 SIF4 = Table("SIF 4.csv", meaning="difficulte geographique")
 
