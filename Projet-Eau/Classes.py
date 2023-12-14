@@ -1,25 +1,27 @@
 from flou_import import *
 
 ## Définition des entrées floues où l'utilsateur évalue lui-même les degrés d'appartenance (Entrée floues)
-type_terrain = Classe_classification("type_terrain", "peu escarpe", "escarpe")
-mois_saison = Classe_classification("saison", "seche", "optimale", "pluie")
+type_terrain = Classe_classification("type_terrain", "peu escarpe", "moyen", "escarpe")
+score_humain = Classe_classification("score humain", "defavorable", "neutre", "favorable")
 accessibilite = Classe_classification("accessibilite", "peu accessible", "moyennement accessible", "accessible")
-ressenti_faisabilite = Classe_classification("ressenti_faisabilite", "contre", "indifferent", "pour")
-ressenti_conflits = Classe_classification("ressenti_conflits", "tres probable", "probable", "moyennement probable", "peu probable" )
+ressenti_enthousiasme = Classe_classification("ressenti_faisabilite", "contre", "indifferent", "pour")
+ressenti_conflits = Classe_classification("ressenti_conflits", "peu probable", "moyennement probable", "probable", "tres probable" )
 couleur_eau = Classe_classification("couleur de l'eau", "trouble", "claire")
 odeur_eau = Classe_classification("odeur de l'eau", "pas d'odeur", "odeur", "forte odeur")
-
-
+praticabilite = Classe_classification("practicabilite", "impraticable", "peu praticable", "praticable", "tres praticable")
 
 ## Classes floues ou l'entrée est soit nette (auquel cas elle est fuzzifiée) soit floues auquel cas elle est évaluée par un calcul de possibilté
 
 saison = Classe("saison")
+saison_opti0 = IFT(0,0,2,3,1, "optimale")
 saison_seche = IFT(2,3,5,6,1,"seche")
 saison_opti = IFT(4,5,6,7,1,"optimale")
 saison_pluie = IFT(5,6,9,10, 1, "pluie")
 saison_opti2 = IFT(9,10,13,13,1,"optimale")
-saison.ajouter(saison_seche, saison_pluie, saison_opti)
-saison.plot()
+saison.ajouter(saison_seche, saison_pluie, saison_opti, saison_opti2, saison_opti0)
+#saison.plot()
+
+
 
 
 difference_distance = Classe("difference distance")
@@ -61,6 +63,7 @@ prop_trop_elevee = IFT(1.2, 3, 4, 4,1,  "trop elevee")
 prop_debit_besoin.ajouter(prop_trop_faible, prop_satisf, prop_trop_elevee)
 #plt.title("Proportion débit/besoin")
 #prop_debit_besoin.plot()
+
 
 
 score_village_src = Classe("Score Village/Source")

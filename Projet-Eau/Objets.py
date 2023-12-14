@@ -1,7 +1,8 @@
 from Rules import *
 import math
 import cv2
-
+def T_probabiliste(x,y):
+    return x*y
 
 class Point():
     """
@@ -53,22 +54,31 @@ class Carte():
     """"
     Objet de type carte
     """
-    def __init__(self, carte, accessibilite =None, type_terrain = None, resize_x = 200, resize_y = 200):
-        self.l = 400 # largeur et longueur  la carte
-        self.L = 400
-        self.resize_x = resize_x # taille de la carte redimensionnée
-        self.resize_y = resize_y
+    def __init__(self, carte, jour, accessibilite =None, type_terrain = None, resized_factor = 0.75):
+        self.saison = self.eval_saison(jour)
+        self.l = None # largeur et longueur la carte mis à jour automatiquement
+        self.L = None
         self.carte_color = None
         self.carte = None
         self.lire_carte(carte) # instancie et lit les cartes (une en couleur, une en noir et blanc)
+        self.resize_x = int(self.l * resized_factor)  # taille de la carte redimensionnée
+        self.resize_y = int(self.l * resized_factor)
         self.carte_resized = cv2.resize(self.carte, (self.resize_x, self.resize_y)) # carte redimensionnée aux dimensions données
         self.alt_min = 0 # altitude varie entre 0 et le max spécifié dans l'entrée floue difference altitude
         self.alt_max = difference_altitude.range.b
         self.x_max = difference_distance.range.b / math.sqrt(2) # comme x_max**2 + ymax**2 = difference_distance_max**2, on en déduit x_max et y_max étant donné que la carte est carrée et toutes les valuers positives
         self.y_max = difference_distance.range.b / math.sqrt(2)
-        self.accessibilite = accessibilite # Stocke la valeur d'accéssibilité du terrain
-        self.type_terrain = type_terrain # Stocke l'escarpement du terrain
+        self.accessibilite = accessibilite # Stocke la valeur d'accessibilité du terrain
+        self.type_terrain = type_terrain  # Stocke l'escarpement du terrain
+        self.praticabilite = SIF0.inference(self.type_terrain, self.saison, show=False) # calcul la praticabilité associée au terrain
 
+
+    def eval_saison(self, jour):
+        jj, mm = tuple(jour.split("/"))
+        jj, mm = int(jj), int(mm)
+        mois = mm+jj*1/30
+        saison_result = saison.v(mois)
+        return saison_result
 
     def __str__(self):
         """
@@ -82,6 +92,11 @@ class Carte():
         Récupère l'image associée et update les cartes
         """
         image_elevation = cv2.imread("./cartes/"+carte)
+        x,y = image_elevation.shape[0], image_elevation.shape[1]
+        if x<y:
+            image_elevation = image_elevation[:,:x]
+        else:
+            image_elevation = image_elevation[:y,:]
         self.carte_color = image_elevation
         image_gray = cv2.cvtColor(image_elevation, cv2.COLOR_BGR2GRAY)
         self.carte = np.array(image_gray,  dtype=np.float64)
@@ -158,14 +173,16 @@ class Village():
     """
     Objet de type village
     """
-    def __init__(self, carte, x, y, nb_habitants, ressenti, infrastructure, lb=""):
+    def __init__(self, carte, x, y, nb_habitants, ressenti_ent, ressenti_conf, infrastructure, lb=""):
         self.lb = lb # nom du village
         self.carte = carte # carte associée
         x, y = int(map_range(x, 0, carte.x_max, 0, carte.l)), int(map_range(y, 0, carte.y_max, 0, carte.L)) # coordonnées du villages mappées à la carte
         self.x = x
         self.y = y
         self.nb_habitants = nb_habitants
-        self.ressenti = ressenti
+        self.ressenti_ent = ressenti_ent
+        self.ressent_conf = ressenti_conf
+        self.score_hum = SIF3bis.inference(ressenti_conf, ressenti_ent, show=False)
         self.infrastructure = infrastructure # infrastructures que le village a, nécessitants des besoins plus importants
         self.besoin = self.eval_besoin() # Calcul le besoin en eau par jour du village
 
@@ -244,6 +261,6 @@ def calculer_score(carte, village, source, show = True):
     difficulte_geo = SIF4.inference(altitude_cum, diff_altitude, show=show) # déduit la difficulté géographique associée
     diff_dist = difference_distance.v(carte.distance(village, source)) # qualifie la différence de distance
     score_geo = SIF6.inference( diff_dist, difficulte_geo, show=show) # en déduit un score géographique associé
-    score = SIF8.inference(score_geo, score_eau, show=show) # combine les deux scores pour obtenir le score final
+    score = SIF8.inference(score_geo, score_eau,tnorme=T_probabiliste,  show=show) # combine les deux scores pour obtenir le score final
     score_defuzz = score_village_src.eval(score) # le défuzzifie pour réaliser le matching
     return (score_defuzz, score) # renvoie quand même le score fuzzifié pour logs

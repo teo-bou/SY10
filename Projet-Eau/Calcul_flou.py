@@ -2,18 +2,18 @@ from matching import optimisation_score
 from Astar import *
 import matplotlib.pyplot as plt
 import seaborn as sns
-def T_probabiliste(x,y):
-    return x*y
+
 def faisabilite(carte, liste_village, liste_sources, show = False, defuz = False):
     """
     Calcul de la faisabilité globale du projet
     """
-    res_total_fav = sum([ village.ressenti["favorable"] for village in liste_village ])/len(liste_village) # Calcul la moyenne des ressentis favorables de chaque village
-    res_total_defav = sum([village.ressenti["defavorable"] for village in liste_village]) / len(liste_village)  # Calcul la moyenne des ressentis défavorables de chaque village
-    res_total = ressenti.v(res_total_defav, res_total_fav) # Rentre ces données dans l'entrée floue ressenti
+    scoreh_fav = sum([ village.score_hum["favorable"] for village in liste_village ])/len(liste_village) # Calcul la moyenne des scores-humain favorables de chaque village
+    scoreh_neut = sum([village.score_hum["neutre"] for village in liste_village]) / len(liste_village)  # Calcul la moyenne des scores-humain neutre de chaque village
+    scoreh_defav = sum([village.score_hum["defavorable"] for village in liste_village]) / len(liste_village)  # Calcul la moyenne des scores-humain défavorables de chaque village
+    scoreh = score_humain.v(scoreh_defav, scoreh_neut,  scoreh_fav) # Rentre ces données dans l'entrée floue score-humain
 
     access = carte.accessibilite
-    type_terr = carte.type_terrain
+    practicab = carte.praticabilite
 
     # Initialise les différentes variables pour le calcul de moyenne
 
@@ -52,16 +52,16 @@ def faisabilite(carte, liste_village, liste_sources, show = False, defuz = False
 
     prop_src_besoin = proportion_sources_besoins.possibilite(prop_src_besoin.poly()) # Évaluation de cette proportion dans l'entrée correspondante par calcul de possibilité
 
-    conditions_geologiques = SIF1.inference(type_terr, diff_alt, alt_cum, show = show) # Calcul des conditions géologiques
-    score_terrain = SIF2.inference(access, conditions_geologiques, diff_dist, show = show) # du score terrain
-    faisable = SIF3.inference(res_total, prop_src_besoin, score_terrain,tnorme=T_probabiliste, show = True) # et enfin de la faisabilité
+    conditions_geologiques = SIF1.inference(practicab, diff_alt, alt_cum, tnorme=T_probabiliste,  show = show) # Calcul des conditions géologiques
+    score_terrain = SIF2.inference(access, conditions_geologiques, diff_dist, tnorme=T_probabiliste, show = show) # du score terrain
+    faisable = SIF3.inference(scoreh, prop_src_besoin, score_terrain,tnorme=T_probabiliste, show = True) # et enfin de la faisabilité
 
     if defuz: # si volonté de défuzzifier
-        index = int(sum([i*faisable[key] for i, key in enumerate(faisable.keys())])) # calcul le barycentre discret
+        index = int(sum([i*faisable[key] for i, key in enumerate(faisable.keys())])/sum(list(faisable.values()))) # calcul le barycentre discret
         result_defuz = list(faisable.keys())[index]
         if show:
             print(f"Faisabilité : {result_defuz}")
-            if index <= 4:
+            if index <= 2:
                 print("Soyez sage au sens de Socrate, admettez l'impuissance")
         return (defuz, faisable)
 

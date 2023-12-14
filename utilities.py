@@ -3,9 +3,9 @@ import numpy as np
 import shapely as sp
 from matplotlib import pyplot as plt
 
-cat = ["impossible", "tres difficile", "difficile", "tres mauvais", "mauvais", "vraiment pas bon", "pas bon",
-       "pas bonne", "tres bas", "bas", "passable", "tres faible", "faible", "moyen", "bon", "tres bon", "haut",
-       "tres haut", "facile", "tres facile", "excellent"]  # Ordre des catégories à afficher
+cat = ["defavorable", "impossible", "tres difficile", "difficile", "tres mauvais", "mauvais", "vraiment pas bon", "pas bon",
+       "pas bonne", "tres bas", "bas", "passable", "tres faible", "faible", "moyen", "neutre", "bon", "tres bon", "haut",
+       "tres haut", "facile", "tres facile", "excellent", "favorable"]  # Ordre des catégories à afficher
 
 
 def map_range(x, in_min, in_max, out_min, out_max):
@@ -251,7 +251,7 @@ class Classe():
             if ift.label in appartenances.keys(): # si elle a déjà été évaluée on prend le maximum entre cette valeur et l'ancienne
                 appartenances[ift.label] = max(ift.v(x), appartenances[ift.label])
             else:
-                appartenances[ift.label] = max(ift.v(x), appartenances[ift.label])
+                appartenances[ift.label] = ift.v(x)
         return appartenances
 
     def possibilite(self, poly):
@@ -420,7 +420,7 @@ class Table_mult():
         self.tables = tables
         self.lb_classe = classe.classes # récupère les différentes partitions possibles pour la classe différenciante
         if len(tables) != len(self.lb_classe): # s'il n'y pas le même nombre de tableaux qu'il n'y a de partitions dans la classe différenciante
-            raise ValueError(f"Pas le bon nombre de tables : {len(tables)} != {len(self.lb_classe)}")
+            raise ValueError(f"Pas le bon nombre de tables pour {str(self)} : {len(tables)} != {len(self.lb_classe)}")
         self.table = {key: table for key, table in zip(self.lb_classe, tables)} # associe à chaque partition de la classe différenciante, une table correspondante
         self.lb_result = [] # initialise les différentes partitions possibles en sortie
         for item in tables:
