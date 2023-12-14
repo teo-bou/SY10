@@ -70,7 +70,7 @@ class Carte():
         self.y_max = difference_distance.range.b / math.sqrt(2)
         self.accessibilite = accessibilite # Stocke la valeur d'accessibilité du terrain
         self.type_terrain = type_terrain  # Stocke l'escarpement du terrain
-        self.praticabilite = SIF0.inference(self.type_terrain, self.saison, show=False) # calcul la praticabilité associée au terrain
+        self.praticabilite = SIF0.inference(self.type_terrain, self.saison, tnorme=T_probabiliste, show=False) # calcul la praticabilité associée au terrain
 
 
     def eval_saison(self, jour):

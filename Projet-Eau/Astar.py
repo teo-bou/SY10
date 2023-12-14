@@ -128,7 +128,7 @@ def search_map(map, start, goal):
     # Si pas de chemin trouvé
     return []
 
-def tracer(map, img, path,color):
+def tracer(map, img, path,color, th):
     """
     Affiche sur la carte le chemin
     """
@@ -137,7 +137,7 @@ def tracer(map, img, path,color):
                    dtype=np.int32) # remets à l'échelle les points trouvés sur la carte plus petite à la taille de la carte originelle
     pts = pts.reshape((-1, 1, 2)) #formattage pour OpenCV
 
-    img = cv2.polylines(img.copy(), pts, True, color, 3) # Trace le trait sur l'image donnée
+    img = cv2.polylines(img.copy(), pts, True, color, th) # Trace le trait sur l'image donnée
     return img
 
 def croix(img, pts, color, thickness, space):

@@ -51,13 +51,14 @@ def faisabilite(carte, liste_village, liste_sources, show = False, defuz = False
     prop_src_besoin = somme_src /somme_besoin # Calcul de la proportion débits total des sources / somme des besoins des villages
 
     prop_src_besoin = proportion_sources_besoins.possibilite(prop_src_besoin.poly()) # Évaluation de cette proportion dans l'entrée correspondante par calcul de possibilité
-
+    if show:
+        print("Proportion entre le débit et le besoin", prop_src_besoin)
     conditions_geologiques = SIF1.inference(practicab, diff_alt, alt_cum, tnorme=T_probabiliste,  show = show) # Calcul des conditions géologiques
     score_terrain = SIF2.inference(access, conditions_geologiques, diff_dist, tnorme=T_probabiliste, show = show) # du score terrain
     faisable = SIF3.inference(scoreh, prop_src_besoin, score_terrain,tnorme=T_probabiliste, show = True) # et enfin de la faisabilité
 
     if defuz: # si volonté de défuzzifier
-        index = int(sum([i*faisable[key] for i, key in enumerate(faisable.keys())])/sum(list(faisable.values()))) # calcul le barycentre discret
+        index = round(sum([i*faisable[key] for i, key in enumerate(faisable.keys())])/sum(list(faisable.values()))) # calcul le barycentre discret
         result_defuz = list(faisable.keys())[index]
         if show:
             print(f"Faisabilité : {result_defuz}")
@@ -98,25 +99,25 @@ def tracer_carte(carte, liste_village, liste_sources, show = False):
     palette = [[tuple(int(color.lstrip("#")[i:i+2], 16) for i in (4, 2, 0))][0] for color in palette] # conversion de cette dernière en BGR pour OpenCV
     colors = {village: palette[i]for i, village in enumerate(liste_village)} # associe à chaque village une couleur
     matching = matching_score_village(carte, liste_village, liste_sources, show= False) # récupère les associations village : [sources]
-
+    th = round(carte.l /100)
     carte_globale = carte.carte_color.copy() # crée une carte globale sur laquelle afficher les chemins
     for village, sources in matching.items(): # pour chaque village :
         if show:
             print(village, ": ", end="")
         color = colors[village] # récupère la couleur du village
-        carte_globale = cv2.circle(carte_globale, (village.x, village.y), 7, color, -1) # affiche un cercle sur le village sur la carte
+        carte_globale = cv2.circle(carte_globale, (village.x, village.y), 3*th, color, -1) # affiche un cercle sur le village sur la carte
         carte_village = carte.carte_color.copy() # carte vierge pour chaque village
-        carte_village = cv2.circle(carte_village, (village.x, village.y), 12, color, -1) # affiche un cercle sur le village sur la carte
+        carte_village = cv2.circle(carte_village, (village.x, village.y), 4*th, color, -1) # affiche un cercle sur le village sur la carte
         for source in sources: # pour chaque source associée
             if show:
                 print(source, end=", ")
             start = (source.x, source.y)
             goal = (village.x, village.y)
             path = search_map(carte, start, goal) #r écupère le chemin optimal trouvé
-            carte_globale = tracer(carte, carte_globale, path, color) # trace le chemin sur les cartes
-            carte_village = tracer(carte, carte_village, path, color)
-            carte_globale = croix(carte_globale, start, color, 4, 4) # trace une croix à l'endroit de la source
-            carte_village = croix(carte_village, start, color, 4, 6)
+            carte_globale = tracer(carte, carte_globale, path, color,round(2/3*th)) # trace le chemin sur les cartes
+            carte_village = tracer(carte, carte_village, path, color, th)
+            carte_globale = croix(carte_globale, start, color, th, th) # trace une croix à l'endroit de la source
+            carte_village = croix(carte_village, start, color, th, 2*th)
         if show:
             plt.imshow(carte_village)
             plt.show()
