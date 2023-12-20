@@ -1,7 +1,7 @@
 # Projet SY10 sur l'optimisation et la recherche de chemin pour l'accès à l'eau en Éthiopie
 ---
 >[!Tip]
->Ce projet est sur GitHub (https://github.com/teo-bou/SY10) et nous ye ferons peut-être des modifications donc si vous voulez accéder à la dernière version, n'hésitez pas à y aller. Par ailleurs, si vous avez quelques questions que ce soit, n'hésitez pas à nous recontacter
+>Ce projet est sur GitHub (https://github.com/teo-bou/SY10) et nous y ferons peut-être des modifications donc si vous voulez accéder à la dernière version, n'hésitez pas à y aller. Par ailleurs, si vous avez quelques questions que ce soit, n'hésitez pas à nous recontacter
 
 >[!Warning]
 >Certaines bibliothèques Python ont été utilisées pour ce projet. Pour les installer, utilisez la commande ```pip install -r requirements.txt``` 
