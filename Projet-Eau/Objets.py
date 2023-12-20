@@ -76,14 +76,33 @@ class Carte():
     def eval_saison(self, jour):
         jj, mm = tuple(jour.split("/"))
         jj, mm = int(jj), int(mm)
-        mois = mm+jj*1/30
-        saison_result = saison.v(mois)
+        mois = mm+jj*1/30 # converti le mois et le jour en le numéro du mois avec en décimal la progression dans le mois
+        saison_result = saison.v(mois) # récupère la saison associée
         return saison_result
+    def carte3D(self, angle):
+        x = np.outer(np.linspace(0, min(self.l, self.L) - 1, 200), np.ones(200)) #initialise un grid de 1 pour les x, avec une résolution de 200
+        y = x.copy().T #initialise un grid de 1 pour les y
+        z = np.array([[max(0, self.alt(Point((int(yii), int(xii))))) for xii, yii in zip(xi, yi)] for xi, yi in zip(x, y)]) # calcule l'altitude de chaque point de la carte
+
+
+        ax = plt.axes(projection='3d') # créé la figure en 3D
+        my_cmap = plt.get_cmap('viridis') # récupère la color-map pour les couleurs
+
+
+        ax.set_zlim([0, 1500]) # initialise la vue
+        ax.view_init(angle,0,0) # initialise le point de vue
+        ax.plot_surface(x, y, z, cmap=my_cmap, edgecolor='none') #trace la surface correspondante
+        plt.show() # affiche la carte
+
 
     def __str__(self):
         """
         Affiche la carte
         """
+
+
+        self.carte3D(90)
+        self.carte3D(50)
         plt.imshow(self.carte_color)
         plt.show()
         return f"Carte allant de x=[0;{self.x_max}], y = [0; {self.y_max}], alt = [{self.alt_min}; {self.alt_max}]"
@@ -91,16 +110,16 @@ class Carte():
         """
         Récupère l'image associée et update les cartes
         """
-        image_elevation = cv2.imread("./cartes/"+carte)
+        image_elevation = cv2.imread("./cartes/"+carte) # récupère l'image dans le dossier carte
         x,y = image_elevation.shape[0], image_elevation.shape[1]
-        if x<y:
+        if x<y: # rogne l'image au plus grand  carré
             image_elevation = image_elevation[:,:x]
         else:
             image_elevation = image_elevation[:y,:]
         self.carte_color = image_elevation
-        image_gray = cv2.cvtColor(image_elevation, cv2.COLOR_BGR2GRAY)
+        image_gray = cv2.cvtColor(image_elevation, cv2.COLOR_BGR2GRAY) # converti l'image en noir et blanc
         self.carte = np.array(image_gray,  dtype=np.float64)
-        self.L, self.l = image_gray.shape[0], image_gray.shape[1]
+        self.L, self.l = image_gray.shape[0], image_gray.shape[1] # récupère les dimensions de l'image
 
 
 
@@ -180,8 +199,8 @@ class Village():
         self.x = x
         self.y = y
         self.nb_habitants = nb_habitants
-        self.ressenti_ent = ressenti_ent
-        self.ressent_conf = ressenti_conf
+        self.ressenti_ent = ressenti_ent #ressenti des habitants vis à vis du projet
+        self.ressent_conf = ressenti_conf # ressenti sur l'apparitions de conflits dans la zone
         self.score_hum = SIF3bis.inference(ressenti_conf, ressenti_ent, show=False)
         self.infrastructure = infrastructure # infrastructures que le village a, nécessitants des besoins plus importants
         self.besoin = self.eval_besoin() # Calcul le besoin en eau par jour du village
@@ -238,29 +257,3 @@ class Source():
             return self.lb
         else:
             return self
-def CAF2(village, source):
-    """
-    Module de calcul d'arithmétique flou permettant de déterminer la proportion de débit de la source par rapport au besoin
-    """
-    besoin = village.besoin
-    debit = source.debit
-    ift = debit*86400/besoin # comme le débit est en litres par seconde, il faut le reconvertir en litres/jour
-    ift.label = "prop debit/besoin"
-    return prop_debit_besoin.possibilite(ift.poly()) # évalue l'appartenance aux différentes classes de l'entrée floue proportion entre le débit et le besoin
-
-
-def calculer_score(carte, village, source, show = True):
-    """
-    Permet de calculer un score de correspondance à un couple (village, source)
-    """
-    proportion_debit_besoin = CAF2(village, source) # calcul la qualification de la proportion débit/besoin entre le village et le source
-    qualite_eau = SIF5.inference(source.couleur, source.odeur, show=show ) # déduit la qualité de l'eau de la source grâce à sa couleur et son odeur
-    score_eau = SIF7.inference( proportion_debit_besoin, qualite_eau, show=show) # calcul un score lié à l'eau
-    diff_altitude = difference_altitude.v(abs(carte.alt(village)-carte.alt(source))) # qualifie la différence d'altitude
-    altitude_cum = altitude_cumulee.v(abs(carte.alt_cum(village, source))) # qualifie l'altitude cumulée
-    difficulte_geo = SIF4.inference(altitude_cum, diff_altitude, show=show) # déduit la difficulté géographique associée
-    diff_dist = difference_distance.v(carte.distance(village, source)) # qualifie la différence de distance
-    score_geo = SIF6.inference( diff_dist, difficulte_geo, show=show) # en déduit un score géographique associé
-    score = SIF8.inference(score_geo, score_eau,tnorme=T_probabiliste,  show=show) # combine les deux scores pour obtenir le score final
-    score_defuzz = score_village_src.eval(score) # le défuzzifie pour réaliser le matching
-    return (score_defuzz, score) # renvoie quand même le score fuzzifié pour logs

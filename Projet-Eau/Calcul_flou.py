@@ -63,7 +63,7 @@ def faisabilite(carte, liste_village, liste_sources, show = False, defuz = False
         if show:
             print(f"Faisabilité : {result_defuz}")
             if index <= 2:
-                print("Soyez sage au sens de Socrate, admettez l'impuissance")
+                print("Soyez sage au sens de Socrate, admettez l'impuissance et ne continuez pas forcément dans cette voie")
         return (defuz, faisable)
 
     return faisable
@@ -99,7 +99,7 @@ def tracer_carte(carte, liste_village, liste_sources, show = False):
     palette = [[tuple(int(color.lstrip("#")[i:i+2], 16) for i in (4, 2, 0))][0] for color in palette] # conversion de cette dernière en BGR pour OpenCV
     colors = {village: palette[i]for i, village in enumerate(liste_village)} # associe à chaque village une couleur
     matching = matching_score_village(carte, liste_village, liste_sources, show= False) # récupère les associations village : [sources]
-    th = round(carte.l /100)
+    th = round(carte.l /100) #thickness des élements du dessin
     carte_globale = carte.carte_color.copy() # crée une carte globale sur laquelle afficher les chemins
     for village, sources in matching.items(): # pour chaque village :
         if show:
@@ -122,17 +122,39 @@ def tracer_carte(carte, liste_village, liste_sources, show = False):
             plt.imshow(carte_village)
             plt.show()
             print()
-
+    print("Carte globale : ")
     plt.imshow(carte_globale) # affiche la carte
     plt.show()
 
-    return carte_globale
+def CAF2(village, source):
+    """
+    Module de calcul d'arithmétique flou permettant de déterminer la proportion de débit de la source par rapport au besoin
+    """
+    besoin = village.besoin
+    debit = source.debit
+    ift = debit*86400/besoin # comme le débit est en litres par seconde, il faut le reconvertir en litres/jour
+    ift.label = "prop debit/besoin"
+    return prop_debit_besoin.possibilite(ift.poly()) # évalue l'appartenance aux différentes classes de l'entrée floue proportion entre le débit et le besoin
+
+
+def calculer_score(carte, village, source, show = True):
+    """
+    Permet de calculer un score de correspondance à un couple (village, source)
+    """
+    proportion_debit_besoin = CAF2(village, source) # calcul la qualification de la proportion débit/besoin entre le village et le source
+    qualite_eau = SIF5.inference(source.couleur, source.odeur, show=show ) # déduit la qualité de l'eau de la source grâce à sa couleur et son odeur
+    score_eau = SIF7.inference( proportion_debit_besoin, qualite_eau, show=show) # calcul un score lié à l'eau
+    diff_altitude = difference_altitude.v(abs(carte.alt(village)-carte.alt(source))) # qualifie la différence d'altitude
+    altitude_cum = altitude_cumulee.v(abs(carte.alt_cum(village, source))) # qualifie l'altitude cumulée
+    difficulte_geo = SIF4.inference(altitude_cum, diff_altitude, show=show) # déduit la difficulté géographique associée
+    diff_dist = difference_distance.v(carte.distance(village, source)) # qualifie la différence de distance
+    score_geo = SIF6.inference( diff_dist, difficulte_geo, show=show) # en déduit un score géographique associé
+    score = SIF8.inference(score_geo, score_eau,tnorme=T_probabiliste,  show=show) # combine les deux scores pour obtenir le score final
+    score_defuzz = score_village_src.eval(score) # le défuzzifie pour réaliser le matching
+    return (score_defuzz, score) # renvoie quand même le score fuzzifié pour logs
 
 
 
 
 
-
-if __name__ == "__main__":
-    pass
 

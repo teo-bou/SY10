@@ -150,15 +150,22 @@ class IFT():
             return IFT(ift1.a * ift.a, ift1.b * ift.b, ift1.c * ift.c, ift1.d * ift.d, ift1.h, ift1.label)
         else:  # si l'autre élément est un scalaire
             alpha = other
-            a = alpha * self.a
-            b = alpha * self.b
-            c = alpha * self.c
-            d = alpha * self.d
+            if alpha > 0:
+                a = alpha * self.a
+                b = alpha * self.b
+                c = alpha * self.c
+                d = alpha * self.d
+            else:
+                a = alpha * self.d
+                b = alpha * self.c
+                c = alpha * self.b
+                d = alpha * self.a
             return IFT(a, b, c, d, self.h, self.label)
-
+    def __sub__(self, other):
+        return other + (self*(-1))
     def __add__(self, ift):
         """
-        Ajoute deux IFT . Peut être appellée par l'addition :
+        Ajoute deux IFT. Peut être appellée par l'addition :
         ift = ift1 + ift2
         le label conservé sera celui du premier IFT (ici ift1)
         """
@@ -210,6 +217,7 @@ class Classe_classification():
         self.classes = list(classes)  # récupère les différentes classes floues associées à la classe
 
     def v(self, *valeurs):
+        """Créér un dictionnaire avec chaque valeur correspondante"""
         return {key: value for key, value in zip(self.classes,
                                                  valeurs)}  # créé le dictionnaire associé, avec chaque classe et son degré d'appartenance
 
