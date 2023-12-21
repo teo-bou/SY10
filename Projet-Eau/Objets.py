@@ -207,7 +207,7 @@ class Village():
 
     def eval_besoin_infra(self):
         """
-        Évalue le besoin en eau hebdomadaire du village
+        Évalue le besoin hebdomadaire en eau du village en fonction des infrastructures
         """
         infrastructure_dico_fixe = {"hopital":NFT(1625, 2500, 3000, 1, "hopital"), "gouvernement": IFT(325, 500, 1000, 1300, 1, "gouvernement")} # infrastructures au besoins fixes peu importe le nombre d'habitants (valeurs tirées du Handbook)
         infrastructure_dico_variable = {"hopital": NFT(325, 500, 750, 1, "hopital"), "ecole": NFT(6.5,10, 15, 1, "ecole")} # infrastructures au besoin variant selon le nombre d'habitan,t du village
