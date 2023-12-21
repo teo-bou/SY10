@@ -165,7 +165,7 @@ class IFT():
         return other + (self*(-1))
     def __add__(self, ift):
         """
-        Ajoute deux IFT. Peut être appellée par l'addition :
+        Ajoute deux IFT. Peut être appelée par l'addition :
         ift = ift1 + ift2
         le label conservé sera celui du premier IFT (ici ift1)
         """
