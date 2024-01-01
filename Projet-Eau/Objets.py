@@ -185,7 +185,7 @@ class Carte():
         """
         Retourne la différence d'altitude absolue entre deux points
         """
-        return abs(self.alt(a) -  self.alt(b))
+        return abs(self.alt(a) - self.alt(b))
 
 
 class Village():
@@ -200,14 +200,14 @@ class Village():
         self.y = y
         self.nb_habitants = nb_habitants
         self.ressenti_ent = ressenti_ent #ressenti des habitants vis à vis du projet
-        self.ressent_conf = ressenti_conf # ressenti sur l'apparitions de conflits dans la zone
+        self.ressent_conf = ressenti_conf # ressenti sur l'apparition de conflits dans la zone
         self.score_hum = SIF3bis.inference(ressenti_conf, ressenti_ent, show=False)
         self.infrastructure = infrastructure # infrastructures que le village a, nécessitants des besoins plus importants
         self.besoin = self.eval_besoin() # Calcul le besoin en eau par jour du village
 
     def eval_besoin_infra(self):
         """
-        Évalue le besoin en haut hebdomadaire du village
+        Évalue le besoin en eau hebdomadaire du village
         """
         infrastructure_dico_fixe = {"hopital":NFT(1625, 2500, 3000, 1, "hopital"), "gouvernement": IFT(325, 500, 1000, 1300, 1, "gouvernement")} # infrastructures au besoins fixes peu importe le nombre d'habitants (valeurs tirées du Handbook)
         infrastructure_dico_variable = {"hopital": NFT(325, 500, 750, 1, "hopital"), "ecole": NFT(6.5,10, 15, 1, "ecole")} # infrastructures au besoin variant selon le nombre d'habitan,t du village
@@ -221,7 +221,7 @@ class Village():
 
     def eval_besoin(self):
         """
-        évalue le besoin en eau hebdomadaire du village
+        évalue le besoin hebdomadaire en eau du village en fonction des infrastructures
         """
         self.besoin = self.nb_habitants * 30 # Chaque habitant consomme 30L par jour
         self.besoin_infra = self.eval_besoin_infra() # besoin lié aux infrastructures
