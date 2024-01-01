@@ -33,7 +33,7 @@ def faisabilite(carte, liste_village, liste_sources, show = False, defuz = False
             diff_alt +=carte.dist_alt(village, source)
             alt_cum += carte.alt_cum(village, source)
 
-    somme_besoin = somme_besoin / len(liste_village)
+
 
     diff_dist/=len(liste_village)*len(liste_sources)
     diff_alt /= len(liste_village) * len(liste_sources)
@@ -47,7 +47,7 @@ def faisabilite(carte, liste_village, liste_sources, show = False, defuz = False
     somme_src =  IFT(0,0,0,0,1,"somme besoin source")
     for source in liste_sources:
         somme_src = somme_src + source.debit * 86400 # Le débit étant donné par seconde il faut le reconvertir
-    somme_src = somme_src / len(liste_sources) # On prend la moyenne
+
     prop_src_besoin = somme_src /somme_besoin # Calcul de la proportion débits total des sources / somme des besoins des villages
 
     prop_src_besoin = proportion_sources_besoins.possibilite(prop_src_besoin.poly()) # Évaluation de cette proportion dans l'entrée correspondante par calcul de possibilité
